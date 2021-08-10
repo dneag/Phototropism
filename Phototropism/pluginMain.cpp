@@ -8,6 +8,8 @@
 
 #include <maya/MFnPlugin.h>
 
+#include "TestGrowCommand.h"
+
 MStatus initializePlugin( MObject obj )
 //
 //	Description:
@@ -22,8 +24,8 @@ MStatus initializePlugin( MObject obj )
 	MStatus   status;
 	MFnPlugin plugin( obj, "", "2018", "Any");
 
-	// Add plug-in feature registration here
-	//
+	status = plugin.registerCommand("testGrow", TestGrowCommand::creator);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return status;
 }
@@ -41,8 +43,8 @@ MStatus uninitializePlugin( MObject obj )
 	MStatus   status;
 	MFnPlugin plugin( obj );
 
-	// Add plug-in feature deregistration here
-	//
+	status = plugin.deregisterCommand("testGrow");
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return status;
 }
