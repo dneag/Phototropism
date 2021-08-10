@@ -20,6 +20,7 @@
     <ClCompile Include="PhotMath.cpp" />
     <ClCompile Include="pluginMain.cpp" />
     <ClCompile Include="TestGrowCommand_doIt.cpp" />
+    <ClCompile Include="TestGrowCommand_newSyntax.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BranchMesh.h" />

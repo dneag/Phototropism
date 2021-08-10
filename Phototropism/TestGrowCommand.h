@@ -23,7 +23,7 @@ public:
 		return new TestGrowCommand;
 	}
 
-	//static MSyntax newSyntax();
+	static MSyntax newSyntax();
 };
 
 #endif /* TestGrowCommand_h */

@@ -23,6 +23,7 @@
 
 #include "TestGrowCommand.h"
 #include "BranchMesh.h"
+#include "PhotMath.h"
 
 // Creates the meshes within Maya
 // When the testGrow command is executed, this method is called

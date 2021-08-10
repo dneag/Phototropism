@@ -11,6 +11,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <maya/MStreamUtils.h>
+
 namespace MM {
 
 	const double PI = 3.14159265358979;
@@ -111,8 +113,66 @@ struct CVect
 	}
 };
 
-// uses a 3x3 matrix to represent the orientation of a 3D space
-// creates vectors relative to the orientation using spherical coordinates
+struct CVect_m : public CVect {
+
+	double mag;
+
+	CVect_m() {}
+
+	CVect_m(double X, double Y, double Z) : CVect(X, Y, Z), mag(std::sqrt(X * X + Y * Y + Z * Z)) {}
+
+	CVect_m(CVect V) : CVect(V), mag(std::sqrt(V.x * V.x + V.y * V.y + V.z * V.z)) {}
+
+	void operator=(const CVect_m &rhs) {
+
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+		mag = rhs.mag;
+	}
+
+	void operator=(const CVect &rhs) {
+
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+		mag = std::sqrt(x * x + y * y + z * z);
+	}
+
+	double getMag() const { return mag; }
+
+	void resize(double newLength) {
+
+		if (mag == 0.)
+			MStreamUtils::stdOutStream() << "WARNING! Vector length is zero (in CVect_m::resize())\n";
+
+		double normalizer = newLength / mag;
+		x *= normalizer;
+		y *= normalizer;
+		z *= normalizer;
+		mag = newLength;
+	}
+
+	CVect_m resized(double newLength) const {
+
+		MStreamUtils::stdOutStream() << "Hello from CVect_m\n";
+
+		if (mag == 0.)
+			MStreamUtils::stdOutStream() << "WARNING! Vector length is zero (in CVect_m::resized())\n";
+
+		CVect_m v;
+		double normalizer = newLength / mag;
+		v.x = x * normalizer;
+		v.y = y * normalizer;
+		v.z = z * normalizer;
+		v.mag = newLength;
+
+		return v;
+	}
+};
+
+// Uses a 3x3 matrix to represent the orientation of a 3D space
+// Creates vectors relative to the orientation using spherical coordinates
 class Space
 {
 	double aziMatrix[3][3];

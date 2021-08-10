@@ -110,3 +110,9 @@ std::ostream& operator<<(std::ostream& os, const Point &p) {
 	os << "[ " << p.x << ", " << p.y << ", " << p.z << " ]";
 	return os;
 }
+
+std::ostream& operator<<(std::ostream& os, const CVect_m &v) {
+
+	os << "[ " << v.x << ", " << v.y << ", " << v.z << ", " << v.mag << " ]";
+	return os;
+}
