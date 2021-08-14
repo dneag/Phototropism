@@ -25,6 +25,7 @@ class BlockPointGrid {
 	static const int yElements_MAX = 128;
 	static const int zElements_MAX = 128;
 
+
 	Unit grid[xElements_MAX][yElements_MAX][zElements_MAX];
 	double xSize = 24.2;
 	double ySize = 24.2;
@@ -35,23 +36,19 @@ class BlockPointGrid {
 	int xElements = xSize / xUnitSize;
 	int yElements = ySize / yUnitSize;
 	int zElements = zSize / zUnitSize;
-
 	double yGridSize = yUnitSize * yElements;
-
-	int xCenterIndex = xElements / 2;
-	int zCenterIndex = zElements / 2;
-	double halfGridXSize = xUnitSize * xCenterIndex;
-	double halfGridZSize = zUnitSize * zCenterIndex;
-
+	double halfGridXSize = xUnitSize * (xElements / 2);
+	double halfGridZSize = zUnitSize * (zElements / 2);
 	double detectionRange = 3.;
 
 	// Checks that the Point is within the range of the grid. Exits the program if it isn't.
-	void checkRange_Point(const Point &p);
+	void checkRange_Point(const Point &p)const ;
 
 	// Checks that the x, y, and zElements attributes within the max elements range. Exits the program if they are not.
-	void checkRange_GridElements();
+	void checkRange_GridElements() const;
 
-	//std::size_t = 
+	// Returns the index of the grid unit corresponding to the coordinate passed
+	std::size_t findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const;
 
 public:
 

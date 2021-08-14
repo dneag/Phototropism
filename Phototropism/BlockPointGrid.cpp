@@ -4,7 +4,7 @@
 
 #include "BlockPointGrid.h"
 
-void BlockPointGrid::checkRange_Point(const Point &p) {
+void BlockPointGrid::checkRange_Point(const Point &p) const {
 
 	if (p.x > halfGridXSize || p.x < -halfGridXSize) {
 
@@ -23,7 +23,7 @@ void BlockPointGrid::checkRange_Point(const Point &p) {
 	}
 }
 
-void BlockPointGrid::checkRange_GridElements() {
+void BlockPointGrid::checkRange_GridElements() const {
 
 	if (xElements > xElements_MAX) {
 
@@ -40,4 +40,15 @@ void BlockPointGrid::checkRange_GridElements() {
 		MStreamUtils::stdOutStream() << "Failed to instantiate BlockPointGrid. Too many z elements.\nAborting\n";
 		exit(1);
 	}
+}
+
+std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const {
+
+	double shiftedCoord = xCoord + halfGridSize;
+	double temp = shiftedCoord / unitSize;
+	std::size_t ind = static_cast<int>(temp);
+	double remainder = temp - ind; 
+	if (remainder >= .5) { ++ind; }
+
+	return ind;
 }
