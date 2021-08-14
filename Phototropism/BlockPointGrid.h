@@ -25,7 +25,10 @@ class BlockPointGrid {
 	static const int yElements_MAX = 128;
 	static const int zElements_MAX = 128;
 
-
+	// We want the grid to be represented as centered on the Maya grid.  This means that x and z elements must always be an odd
+	// number.  E.g. xSize / xUnitSize is always an odd number.  Also, this means that the center element itself is centered on
+	// the Maya grid.  E.g. the x and z coordinates at the center of the center element are 0. and 0.  This is implemented in the
+	// findShiftedIndex() method.
 	Unit grid[xElements_MAX][yElements_MAX][zElements_MAX];
 	double xSize = 24.2;
 	double ySize = 24.2;

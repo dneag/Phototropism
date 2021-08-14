@@ -43,8 +43,12 @@ void BlockPointGrid::checkRange_GridElements() const {
 }
 
 std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const {
-
+	
+	// Add halfGridSize to put the coordinate in the positive range. E.g. the range corresponding to grid element indices.
 	double shiftedCoord = xCoord + halfGridSize;
+
+	// To represent the grid as centered, we must account for a potential additional half unit shift.  We do this by adding 1 to the index
+	// if the remainder from truncating temp is greater than .5.
 	double temp = shiftedCoord / unitSize;
 	std::size_t ind = static_cast<int>(temp);
 	double remainder = temp - ind; 
