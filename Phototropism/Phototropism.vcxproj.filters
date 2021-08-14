@@ -41,6 +41,9 @@
     <ClCompile Include="TestGrowCommand_newSyntax.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BlockPointGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestGrowCommand.h">
