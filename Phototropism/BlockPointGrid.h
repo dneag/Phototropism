@@ -2,7 +2,7 @@
 #ifndef BlockPointGrid_h
 #define BlockPointGrid_h
 
-#include <stdexcept>
+#include <cmath>
 
 #include <maya/MStreamUtils.h>
 
@@ -76,18 +76,14 @@ public:
 		detectionRange = DETECTIONRANGE;
 	}
 
-	//Unit addToUnitDensity(const Point &p) {
+	void addToUnitDensity(const Point &p) {
 
-	//	// p.x = .8 and halfGridXSize = .8
-	//	double xShifted = p.x + halfGridXSize; // xShifted = 1.6
-	//	double temp = xShifted / xUnitSize; // temp = 8.
-	//	int ind = static_cast<int>(temp);// ind = 8
-	//	double remainder = temp - ind; // remainder = 0
+		this->checkRange_Point(p);
 
-	//	if (remainder >= .5) { ++ind; } // ind = 8
-
-	//	return grid[xIndex][y][zIndex];
-	//}
+		std::size_t xInd = findShiftedIndex(p.x, halfGridXSize, xUnitSize);
+		std::size_t yInd = std::floor(p.y);
+		std::size_t zInd = findShiftedIndex(p.z, halfGridZSize, zUnitSize);
+	}
 };
 
 #endif /* BlockPointGrid_h */

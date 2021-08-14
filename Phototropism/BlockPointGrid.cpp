@@ -50,7 +50,7 @@ std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize,
 	// To represent the grid as centered, we must account for a potential additional half unit shift.  We do this by adding 1 to the index
 	// if the remainder from truncating temp is greater than .5.
 	double temp = shiftedCoord / unitSize;
-	std::size_t ind = static_cast<int>(temp);
+	std::size_t ind = std::floor(temp);
 	double remainder = temp - ind; 
 	if (remainder >= .5) { ++ind; }
 
