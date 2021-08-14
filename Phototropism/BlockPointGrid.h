@@ -19,6 +19,13 @@ class BlockPointGrid {
 
 		Point center;
 		double density = 0.;
+
+		void setCenter(double x, double y, double z) {
+
+			center.x = x;
+			center.y = y;
+			center.z = z;
+		}
 	};
 
 	static const int xElements_MAX = 128;
@@ -40,9 +47,15 @@ class BlockPointGrid {
 	int yElements = ySize / yUnitSize;
 	int zElements = zSize / zUnitSize;
 	double yGridSize = yUnitSize * yElements;
+
+	// The following two are technically half - 1 of the grid size
 	double halfGridXSize = xUnitSize * (xElements / 2);
 	double halfGridZSize = zUnitSize * (zElements / 2);
+
 	double detectionRange = 3.;
+
+	// Set the center points of all units
+	void initiateGrid();
 
 	// Checks that the Point is within the range of the grid. Exits the program if it isn't.
 	void checkRange_Point(const Point &p)const ;

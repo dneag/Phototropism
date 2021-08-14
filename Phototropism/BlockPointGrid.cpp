@@ -4,6 +4,28 @@
 
 #include "BlockPointGrid.h"
 
+void BlockPointGrid::initiateGrid() {
+
+	double xCoord = 0. - halfGridXSize;
+	double zCoord = 0. - halfGridZSize;
+	double yCoord = yUnitSize / 2.;
+
+	for (int xI = 0; xI < xElements; ++xI) {
+		for (int yI = 0; yI < yElements; ++yI) {
+			for (int zI = 0; zI < zElements; ++zI) {
+
+				grid[xI][yI][zI].setCenter(xCoord, yCoord, zCoord);
+
+				zCoord += zUnitSize;
+			}
+
+			yCoord += yUnitSize;
+		}
+
+		xCoord += xUnitSize;
+	}
+}
+
 void BlockPointGrid::checkRange_Point(const Point &p) const {
 
 	if (p.x > halfGridXSize || p.x < -halfGridXSize) {
