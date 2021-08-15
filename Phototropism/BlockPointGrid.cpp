@@ -3,6 +3,7 @@
 */
 
 #include "BlockPointGrid.h"
+#include "Operators.h"
 
 void BlockPointGrid::initiateGrid() {
 
@@ -69,7 +70,7 @@ std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize,
 	// Add halfGridSize to put the coordinate in the positive range. E.g. the range corresponding to grid element indices.
 	double shiftedCoord = xCoord + halfGridSize;
 
-	// To represent the grid as centered, we must account for a potential additional half unit shift.  We do this by adding 1 to the index
+	// To represent the grid as centered, we must account for a potential additional shift.  We do this by adding 1 to the index
 	// if the remainder from truncating temp is greater than .5.
 	double temp = shiftedCoord / unitSize;
 	std::size_t ind = std::floor(temp);
@@ -77,4 +78,19 @@ std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize,
 	if (remainder >= .5) { ++ind; }
 
 	return ind;
+}
+
+void BlockPointGrid::displayGrid() const {
+
+	MStreamUtils::stdOutStream() << "\n";
+
+	for (int xI = 0; xI < xElements; ++xI) {
+		for (int yI = 0; yI < yElements; ++yI) {
+			for (int zI = 0; zI < zElements; ++zI) {
+
+				MStreamUtils::stdOutStream() << "[" << xI << "][" << yI << "][" << zI << "] = ";
+				MStreamUtils::stdOutStream() << grid[xI][yI][zI].center << "\n";
+			}
+		}
+	}
 }

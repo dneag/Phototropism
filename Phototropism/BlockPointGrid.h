@@ -89,6 +89,8 @@ public:
 		detectionRange = DETECTIONRANGE;
 	}
 
+	void displayGrid() const;
+
 	void addToUnitDensity(const Point &p) {
 
 		this->checkRange_Point(p);

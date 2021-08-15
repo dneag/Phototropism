@@ -9,8 +9,9 @@ overloads operators for CVect and Point math
 #define Operators_h
 
 #include <ostream>
-#include "PhotMath.h"
 
+#include "PhotMath.h"
+#include "BlockPointGrid.h"
 
 Point& operator+=(Point &lhs, const CVect &rhs);
 
