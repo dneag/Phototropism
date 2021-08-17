@@ -155,8 +155,6 @@ struct CVect_m : public CVect {
 
 	CVect_m resized(double newLength) const {
 
-		MStreamUtils::stdOutStream() << "Hello from CVect_m\n";
-
 		if (mag == 0.)
 			MStreamUtils::stdOutStream() << "WARNING! Vector length is zero (in CVect_m::resized())\n";
 
