@@ -27,13 +27,6 @@ class BlockPointGrid {
 			center.y = y;
 			center.z = z;
 		}
-
-		void setCenter(double x, double y, double z) {
-
-			center.x = x;
-			center.y = y;
-			center.z = z;
-		}
 	};
 
 	// We want the grid to be represented as centered on the Maya grid.  This means that x and z elements must always be an odd
@@ -67,6 +60,9 @@ class BlockPointGrid {
 
 	// Checks that the Point is within the range of the grid. Exits the program if it isn't.
 	bool checkRange_Point(const Point &p) const;
+
+	// Checks that each index is within the range of the grid
+	bool checkRange_Indices(int x, int y, int z) const;
 
 public:
 

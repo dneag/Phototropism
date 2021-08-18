@@ -75,14 +75,17 @@ std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize,
 
 MStatus BlockPointGrid::addToUnitDensity(const Point &p) {
 
-	if (!this->checkRange_Point(p))
-		return MS::kFailure;
+	/*if (!this->checkRange_Point(p))
+		return MS::kFailure;*/
 
 	std::size_t xInd = findShiftedIndex(p.x, halfGridXSize, xUnitSize);
 	std::size_t yInd = std::floor(p.y / yUnitSize);
 	std::size_t zInd = findShiftedIndex(p.z, halfGridZSize, zUnitSize);
 
 	MStreamUtils::stdOutStream() << "grid unit indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
+
+	if (!this->checkRange_Indices(xInd, yInd, zInd));
+		return MS::kFailure;
 
 	return MS::kSuccess;
 }
@@ -118,6 +121,27 @@ bool BlockPointGrid::checkRange_Point(const Point &p) const {
 	else if (p.z > halfGridZSize || p.z < -halfGridZSize) {
 
 		MStreamUtils::stdOutStream() << "Error. z coordinate outside of grid.\nAborting\n";
+		return false;
+	}
+
+	return true;
+}
+
+bool BlockPointGrid::checkRange_Indices(int x, int y, int z) const {
+
+	if (x >= grid.size() || x < 0) {
+
+		MStreamUtils::stdOutStream() << "Error. x index outside of grid.\nAborting\n";
+		return false;
+	}
+	else if (y >= grid[0].size() || y < 0) {
+
+		MStreamUtils::stdOutStream() << "Error. y index outside of grid.\nAborting\n";
+		return false;
+	}
+	else if (z >= grid[0][0].size() || z < 0) {
+
+		MStreamUtils::stdOutStream() << "Error. z index outside of grid.\nAborting\n";
 		return false;
 	}
 
