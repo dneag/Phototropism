@@ -28,7 +28,6 @@
 
 // Creates the meshes within Maya
 // When the testGrow command is executed, this method is called
-// argList will contain all the information in the flags
 MStatus TestGrowCommand::doIt(const MArgList &argList) {
 
 	MStatus status;
@@ -38,7 +37,8 @@ MStatus TestGrowCommand::doIt(const MArgList &argList) {
 
 	BlockPointGrid bpg(1.2, 1.2, 1.2, .4, .4, .4, 5.);
 
-	bpg.displayGrid();
+	status = bpg.addToUnitDensity(Point(-.4, 0., -.4));
+	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return MS::kSuccess;
 }

@@ -35,58 +35,57 @@ void BlockPointGrid::initiateGrid() {
 	}
 }
 
-void BlockPointGrid::checkRange_Point(const Point &p) const {
+BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double XUNITSIZE, double YUNITSIZE, double ZUNITSIZE, double DETECTIONRANGE) {
 
-	if (p.x > halfGridXSize || p.x < -halfGridXSize) {
+	xSize = XSIZE;
+	xUnitSize = XUNITSIZE;
+	xElements = std::ceil(XSIZE / XUNITSIZE);
 
-		MStreamUtils::stdOutStream() << "Error. x coordinate outside of grid.\nAborting\n";
-		exit(1);
-	}
-	else if (p.y > yGridSize || p.y < 0) {
+	ySize = YSIZE;
+	yUnitSize = YUNITSIZE;
+	yElements = std::ceil(YSIZE / YUNITSIZE);
 
-		MStreamUtils::stdOutStream() << "Error. y coordinate outside of grid.\nAborting\n";
-		exit(1);
-	}
-	else if (p.z > halfGridZSize || p.z < -halfGridZSize) {
+	zSize = ZSIZE;
+	zUnitSize = ZUNITSIZE;
+	zElements = std::ceil(ZSIZE / ZUNITSIZE);
 
-		MStreamUtils::stdOutStream() << "Error. z coordinate outside of grid.\nAborting\n";
-		exit(1);
-	}
+	yGridSize = yUnitSize * yElements;
+	halfGridXSize = xUnitSize * (xElements / 2);
+	halfGridZSize = zUnitSize * (zElements / 2);
+
+	this->initiateGrid();
+
+	detectionRange = DETECTIONRANGE;
 }
 
-void BlockPointGrid::checkRange_GridElements() const {
+std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const {
+	
+	// Add halfGridSize to put the coordinate in the positive range. E.g. the range corresponding to grid element indices.
+	double shiftedCoord = xCoord + halfGridSize;
 
-	if (xElements > BPG::xElements_MAX) {
+	// To represent the grid as centered, we must account for a potential additional shift.  We do this by adding 1 to the index
+	// if the remainder from truncating temp is greater than .5.
+	double temp = shiftedCoord / unitSize;
+	std::size_t ind = std::floor(temp);
+	double remainder = temp - ind; 
+	if (remainder >= .5) { ++ind; }
 
-		MStreamUtils::stdOutStream() << "Failed to instantiate BlockPointGrid. Too many x elements.\nAborting\n";
-		exit(1);
-	}
-	else if (yElements > BPG::yElements_MAX) {
-
-		MStreamUtils::stdOutStream() << "Failed to instantiate BlockPointGrid. Too many y elements.\nAborting\n";
-		exit(1);
-	}
-	else if (zElements > BPG::zElements_MAX) {
-
-		MStreamUtils::stdOutStream() << "Failed to instantiate BlockPointGrid. Too many z elements.\nAborting\n";
-		exit(1);
-	}
+	return ind;
 }
 
-//std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const {
-//	
-//	// Add halfGridSize to put the coordinate in the positive range. E.g. the range corresponding to grid element indices.
-//	double shiftedCoord = xCoord + halfGridSize;
-//
-//	// To represent the grid as centered, we must account for a potential additional shift.  We do this by adding 1 to the index
-//	// if the remainder from truncating temp is greater than .5.
-//	double temp = shiftedCoord / unitSize;
-//	std::size_t ind = std::floor(temp);
-//	double remainder = temp - ind; 
-//	if (remainder >= .5) { ++ind; }
-//
-//	return ind;
-//}
+MStatus BlockPointGrid::addToUnitDensity(const Point &p) {
+
+	if (!this->checkRange_Point(p))
+		return MS::kFailure;
+
+	std::size_t xInd = findShiftedIndex(p.x, halfGridXSize, xUnitSize);
+	std::size_t yInd = std::floor(p.y / yUnitSize);
+	std::size_t zInd = findShiftedIndex(p.z, halfGridZSize, zUnitSize);
+
+	MStreamUtils::stdOutStream() << "grid unit indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
+
+	return MS::kSuccess;
+}
 
 void BlockPointGrid::displayGrid() const {
 
@@ -102,4 +101,25 @@ void BlockPointGrid::displayGrid() const {
 			}
 		}
 	}
+}
+
+bool BlockPointGrid::checkRange_Point(const Point &p) const {
+
+	if (p.x > halfGridXSize || p.x < -halfGridXSize) {
+
+		MStreamUtils::stdOutStream() << "Error. x coordinate outside of grid.\nAborting\n";
+		return false;
+	}
+	else if (p.y > yGridSize || p.y < 0) {
+
+		MStreamUtils::stdOutStream() << "Error. y coordinate outside of grid.\nAborting\n";
+		return false;
+	}
+	else if (p.z > halfGridZSize || p.z < -halfGridZSize) {
+
+		MStreamUtils::stdOutStream() << "Error. z coordinate outside of grid.\nAborting\n";
+		return false;
+	}
+
+	return true;
 }

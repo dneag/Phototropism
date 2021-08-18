@@ -6,15 +6,9 @@
 #include <vector>
 
 #include <maya/MStreamUtils.h>
+#include <maya/MStatus.h>
 
 #include "PhotMath.h"
-
-namespace BPG {
-
-	const int xElements_MAX = 128;
-	const int yElements_MAX = 128;
-	const int zElements_MAX = 128;
-}
 
 struct BlockPoint {
 
@@ -68,14 +62,11 @@ class BlockPointGrid {
 	// Set the center points of all units
 	void initiateGrid();
 
+	// Returns the index of the grid unit corresponding to the coordinate passed
+	std::size_t findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const;
+
 	// Checks that the Point is within the range of the grid. Exits the program if it isn't.
-	void checkRange_Point(const Point &p) const;
-
-	// Checks that the x, y, and zElements attributes within the max elements range. Exits the program if they are not.
-	void checkRange_GridElements() const;
-
-	//// Returns the index of the grid unit corresponding to the coordinate passed
-	//std::size_t findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const;
+	bool checkRange_Point(const Point &p) const;
 
 public:
 
@@ -84,41 +75,11 @@ public:
 		this->initiateGrid();
 	}
 
-	BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double XUNITSIZE, double YUNITSIZE, double ZUNITSIZE, double DETECTIONRANGE) {
-
-		xSize = XSIZE;
-		xUnitSize = XUNITSIZE;
-		xElements = std::ceil(XSIZE / XUNITSIZE);
-
-		ySize = YSIZE;
-		yUnitSize = YUNITSIZE;
-		yElements = std::ceil(YSIZE / YUNITSIZE);
-
-		zSize = ZSIZE;
-		zUnitSize = ZUNITSIZE;
-		zElements = std::ceil(ZSIZE / ZUNITSIZE);
-
-		this->checkRange_GridElements();
-
-		yGridSize = yUnitSize * yElements;
-		halfGridXSize = xUnitSize * (xElements / 2);
-		halfGridZSize = zUnitSize * (zElements / 2);
-
-		this->initiateGrid();
-
-		detectionRange = DETECTIONRANGE;
-	}
+	BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double XUNITSIZE, double YUNITSIZE, double ZUNITSIZE, double DETECTIONRANGE);
 
 	void displayGrid() const;
 
-	/*void addToUnitDensity(const Point &p) {
-
-		this->checkRange_Point(p);
-
-		std::size_t xInd = findShiftedIndex(p.x, halfGridXSize, xUnitSize);
-		std::size_t yInd = std::floor(p.y);
-		std::size_t zInd = findShiftedIndex(p.z, halfGridZSize, zUnitSize);
-	}*/
+	MStatus addToUnitDensity(const Point &p);
 };
 
 #endif /* BlockPointGrid_h */
