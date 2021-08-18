@@ -73,19 +73,21 @@ std::size_t BlockPointGrid::findShiftedIndex(double xCoord, double halfGridSize,
 	return ind;
 }
 
-MStatus BlockPointGrid::addToUnitDensity(const Point &p) {
+MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
 
-	/*if (!this->checkRange_Point(p))
+	/*if (!this->checkRange_Point(bp.loc))
 		return MS::kFailure;*/
 
-	std::size_t xInd = findShiftedIndex(p.x, halfGridXSize, xUnitSize);
-	std::size_t yInd = std::floor(p.y / yUnitSize);
-	std::size_t zInd = findShiftedIndex(p.z, halfGridZSize, zUnitSize);
+	std::size_t xInd = findShiftedIndex(bp.loc.x, halfGridXSize, xUnitSize);
+	std::size_t yInd = std::floor(bp.loc.y / yUnitSize);
+	std::size_t zInd = findShiftedIndex(bp.loc.z, halfGridZSize, zUnitSize);
 
 	MStreamUtils::stdOutStream() << "grid unit indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
 
-	if (!this->checkRange_Indices(xInd, yInd, zInd));
+	if (!this->checkRange_Indices(xInd, yInd, zInd)) 
 		return MS::kFailure;
+
+	grid[xInd][yInd][zInd].density += bp.density;
 
 	return MS::kSuccess;
 }
@@ -100,7 +102,7 @@ void BlockPointGrid::displayGrid() const {
 			for (int zI = 0; zI < zElements; ++zI) {
 
 				MStreamUtils::stdOutStream() << "[" << xI << "][" << yI << "][" << zI << "] = ";
-				MStreamUtils::stdOutStream() << grid[xI][yI][zI].center << "\n";
+				MStreamUtils::stdOutStream() << grid[xI][yI][zI].center << ", density: " << grid[xI][yI][zI].density << "\n";
 			}
 		}
 	}

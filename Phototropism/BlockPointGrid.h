@@ -12,6 +12,10 @@
 
 struct BlockPoint {
 
+	Point loc;
+	double density;
+
+	BlockPoint(const Point &LOC, double DENSITY) : loc(LOC), density(DENSITY) {}
 };
 
 class BlockPointGrid {
@@ -75,7 +79,7 @@ public:
 
 	void displayGrid() const;
 
-	MStatus addToUnitDensity(const Point &p);
+	MStatus addToUnitDensity(const BlockPoint &bp);
 };
 
 #endif /* BlockPointGrid_h */

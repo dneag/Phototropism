@@ -37,8 +37,11 @@ MStatus TestGrowCommand::doIt(const MArgList &argList) {
 
 	BlockPointGrid bpg(1.2, 1.2, 1.2, .4, .4, .4, 5.);
 
-	status = bpg.addToUnitDensity(Point(-.4, 0., -.4));
+	BlockPoint bp(Point(.1, .5, -.23), .3);
+
+	status = bpg.addToUnitDensity(bp);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+	bpg.displayGrid();
 
 	return MS::kSuccess;
 }
