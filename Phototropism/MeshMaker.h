@@ -1,3 +1,9 @@
+/*
+	MeshMaker.h
+
+	Functions for making simple shapes in Maya
+*/
+
 #pragma once
 #ifndef MeshMaker_h
 #define MeshMaker_h
@@ -19,8 +25,8 @@
 
 #include "PhotMath.h"
 
-void makeSphere(const Point &location, double radius);
-
 void makeCube(const Point &location, double width, std::string name);
+
+void makeSphere(const Point &location, double radius);
 
 #endif /* MeshMaker_h */

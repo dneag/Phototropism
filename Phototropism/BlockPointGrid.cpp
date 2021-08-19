@@ -95,15 +95,15 @@ MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
 
 void BlockPointGrid::displayGrid() const {
 
-	MStreamUtils::stdOutStream() << "\n";
-
 	MStreamUtils::stdOutStream() << xElements << ", " << yElements << ", " << zElements << "\n";
 	for (int xI = 0; xI < xElements; ++xI) {
 		for (int yI = 0; yI < yElements; ++yI) {
 			for (int zI = 0; zI < zElements; ++zI) {
 
-				MStreamUtils::stdOutStream() << "[" << xI << "][" << yI << "][" << zI << "] = ";
-				MStreamUtils::stdOutStream() << grid[xI][yI][zI].center << ", density: " << grid[xI][yI][zI].density << "\n";
+				std::string unitName = "[" + std::to_string(xI) + "][" + std::to_string(yI) + "][" + std::to_string(zI) + "]";
+
+				// Assuming the grid units are cubes, this works
+				makeCube(grid[xI][yI][zI].center, xUnitSize, unitName);
 			}
 		}
 	}

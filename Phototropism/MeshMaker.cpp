@@ -1,5 +1,80 @@
+/*
+	MeshMaker.cpp
+
+	Functions for making simple shapes in Maya
+*/
 
 #include "MeshMaker.h"
+
+void makeCube(const Point &location, double width, std::string name) {
+
+	double halfWidth = width / 2.;
+
+	// Create all vertex points and add them to the list
+	std::vector<Point> vertLocs;
+	vertLocs.push_back({ location.x - halfWidth, location.y - halfWidth, location.z - halfWidth });
+	vertLocs.push_back({ location.x - halfWidth, location.y - halfWidth, location.z + halfWidth });
+	vertLocs.push_back({ location.x + halfWidth, location.y - halfWidth, location.z + halfWidth });
+	vertLocs.push_back({ location.x + halfWidth, location.y - halfWidth, location.z - halfWidth });
+	vertLocs.push_back({ location.x - halfWidth, location.y + halfWidth, location.z - halfWidth });
+	vertLocs.push_back({ location.x - halfWidth, location.y + halfWidth, location.z + halfWidth });
+	vertLocs.push_back({ location.x + halfWidth, location.y + halfWidth, location.z + halfWidth });
+	vertLocs.push_back({ location.x + halfWidth, location.y + halfWidth, location.z - halfWidth });
+
+	// Add the vertices to the Maya array
+	MFloatPointArray cubeVertLocs;
+	for (int i = 0; i<8; i++)
+		cubeVertLocs.append(MFloatPoint(vertLocs[i].x, vertLocs[i].y, vertLocs[i].z));
+
+	// A cube always has 6 faces and each face is always a quad
+	MIntArray iaCubeFaceCounts;
+	for (int i = 0; i<6; i++)
+		iaCubeFaceCounts.append(4);
+
+	MIntArray iaCubeFaceConnects;
+
+	// Add faceConnects for the bottom face
+	iaCubeFaceConnects.append(0);
+	iaCubeFaceConnects.append(3);
+	iaCubeFaceConnects.append(2);
+	iaCubeFaceConnects.append(1);
+
+	// Add faceConnects for 3 of the middle faces
+	for (int i = 0; i < 3; i++) {
+
+		iaCubeFaceConnects.append(i);
+		iaCubeFaceConnects.append(i + 1);
+		iaCubeFaceConnects.append(i + 4 + 1);
+		iaCubeFaceConnects.append(i + 4);
+	}
+
+	// Add faceConnects for the last middle face
+	iaCubeFaceConnects.append(3);
+	iaCubeFaceConnects.append(0);
+	iaCubeFaceConnects.append(4);
+	iaCubeFaceConnects.append(7);
+
+	// Add faceConnects for the top face
+	iaCubeFaceConnects.append(4);
+	iaCubeFaceConnects.append(5);
+	iaCubeFaceConnects.append(6);
+	iaCubeFaceConnects.append(7);
+
+	MFnMesh fnCube;
+	MObject cubeTransform = fnCube.create(8, 6, cubeVertLocs, iaCubeFaceCounts, iaCubeFaceConnects);
+
+	// Give our object a name
+
+	MFnDependencyNode nodeFn;
+	nodeFn.setObject(cubeTransform);
+
+	// Create an MString and pass it to a dependency node's setName()
+	std::string cubeName = name;
+	char cubeName_c[32];
+	strcpy(cubeName_c, cubeName.c_str());
+	MString MCubeName = cubeName_c;
+	nodeFn.setName(MCubeName);
+}
 
 void makeSphere(const Point &location, double radius)
 {
@@ -31,7 +106,7 @@ void makeSphere(const Point &location, double radius)
 			sphereVertList[vertIndex].x = location.x + (lengthTimesSinAzi * std::cos(pol));
 			sphereVertList[vertIndex].y = location.y + (sphereRadius * std::cos(azi));
 			sphereVertList[vertIndex].z = location.z + (lengthTimesSinAzi * std::sin(pol));
-			pol += polarIncrement;
+			pol -= polarIncrement;
 			vertIndex++;
 		}
 	}
@@ -160,74 +235,4 @@ void makeSphere(const Point &location, double radius)
 
 	MFnMesh newSphere;
 	newSphere.create(numSphereVerts, numSphereFaces, sphereVertLocs, iaSphereFaceCounts, iaSphereFaceConnects);
-}
-
-void makeCube(const Point &location, double width, std::string name) {
-
-	double halfWidth = width / 2.;
-
-	// Create all vertex points and add them to the list
-	std::vector<Point> vertLocs;
-	vertLocs.push_back({ location.x - halfWidth, location.y - halfWidth, location.z - halfWidth });
-	vertLocs.push_back({ location.x - halfWidth, location.y - halfWidth, location.z + halfWidth });
-	vertLocs.push_back({ location.x + halfWidth, location.y - halfWidth, location.z + halfWidth });
-	vertLocs.push_back({ location.x + halfWidth, location.y - halfWidth, location.z - halfWidth });
-	vertLocs.push_back({ location.x - halfWidth, location.y + halfWidth, location.z - halfWidth });
-	vertLocs.push_back({ location.x - halfWidth, location.y + halfWidth, location.z + halfWidth });
-	vertLocs.push_back({ location.x + halfWidth, location.y + halfWidth, location.z + halfWidth });
-	vertLocs.push_back({ location.x + halfWidth, location.y + halfWidth, location.z - halfWidth });
-
-	// Add the vertices to the Maya array
-	MFloatPointArray cubeVertLocs;
-	for (int i = 0; i<8; i++)
-		cubeVertLocs.append(MFloatPoint(vertLocs[i].x, vertLocs[i].y, vertLocs[i].z));
-
-	// A cube always has 6 faces and each face is always a quad
-	MIntArray iaCubeFaceCounts;
-	for (int i = 0; i<6; i++)
-		iaCubeFaceCounts.append(4);
-
-	MIntArray iaCubeFaceConnects;
-
-	// Add faceConnects for the bottom face
-	iaCubeFaceConnects.append(0);
-	iaCubeFaceConnects.append(3);
-	iaCubeFaceConnects.append(2);
-	iaCubeFaceConnects.append(1);
-
-	// Add faceConnects for 3 of the middle faces
-	for (int i = 0; i < 3; i++) {
-
-		iaCubeFaceConnects.append(i);
-		iaCubeFaceConnects.append(i + 1);
-		iaCubeFaceConnects.append(i + 4 + 1);
-		iaCubeFaceConnects.append(i + 4);
-	}
-
-	// Add faceConnects for the last middle face
-	iaCubeFaceConnects.append(3);
-	iaCubeFaceConnects.append(0);
-	iaCubeFaceConnects.append(4);
-	iaCubeFaceConnects.append(7);
-
-	// Add faceConnects for the top face
-	iaCubeFaceConnects.append(4);
-	iaCubeFaceConnects.append(5);
-	iaCubeFaceConnects.append(6);
-	iaCubeFaceConnects.append(7);
-	
-	MFnMesh fnCube;
-	MObject cubeTransform = fnCube.create(8, 6, cubeVertLocs, iaCubeFaceCounts, iaCubeFaceConnects);
-
-	// Give our object a name
-
-	MFnDependencyNode nodeFn;
-	nodeFn.setObject(cubeTransform);
-
-	// Create an MString and pass it to a dependency node's setName()
-	std::string cubeName = name;
-	char cubeName_c[32];
-	strcpy(cubeName_c, cubeName.c_str());
-	MString MCubeName = cubeName_c;
-	nodeFn.setName(MCubeName);
 }
