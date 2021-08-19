@@ -9,6 +9,7 @@
 #include <maya/MStatus.h>
 
 #include "PhotMath.h"
+#include "MeshMaker.h"
 
 struct BlockPoint {
 
@@ -19,7 +20,7 @@ struct BlockPoint {
 };
 
 class BlockPointGrid {
-	
+
 	struct Unit {
 
 		Point center;
@@ -55,6 +56,8 @@ class BlockPointGrid {
 	double halfGridZSize = zUnitSize * (zElements / 2);
 
 	double detectionRange = 3.;
+
+	std::vector<BlockPoint> bps;
 
 	// Set the center points of all units
 	void initiateGrid();

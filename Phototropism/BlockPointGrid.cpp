@@ -6,6 +6,7 @@
 
 #include "BlockPointGrid.h"
 #include "Operators.h"
+#include "MeshMaker.h"
 
 void BlockPointGrid::initiateGrid() {
 
