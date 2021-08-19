@@ -83,12 +83,11 @@ MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
 	std::size_t yInd = std::floor(bp.loc.y / yUnitSize);
 	std::size_t zInd = findShiftedIndex(bp.loc.z, halfGridZSize, zUnitSize);
 
-	MStreamUtils::stdOutStream() << "grid unit indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
-
 	if (!this->checkRange_Indices(xInd, yInd, zInd)) 
 		return MS::kFailure;
 
-	grid[xInd][yInd][zInd].density += bp.density;
+	// Add the density of the BlockPoint to the Unit, up to a maximum of 1.
+	grid[xInd][yInd][zInd].density = std::min(1., grid[xInd][yInd][zInd].density + bp.density);
 
 	return MS::kSuccess;
 }
