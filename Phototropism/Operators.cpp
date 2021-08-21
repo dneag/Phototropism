@@ -72,6 +72,15 @@ CVect& operator+=(CVect &lhs, const CVect &rhs) {
 	return lhs;
 }
 
+CVect& operator-=(CVect &lhs, const CVect &rhs) {
+
+	lhs.x -= rhs.x;
+	lhs.y -= rhs.y;
+	lhs.z -= rhs.z;
+
+	return lhs;
+}
+
 CVect& operator*=(CVect &lhs, const double multiplier) {
 
 	lhs.x *= multiplier;

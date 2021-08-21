@@ -42,6 +42,9 @@ public:
 	Segment(CVect VECT, Point STARTPOINT, double RADIUS, Meristem *MERI)
 		: vect(VECT), startPoint(STARTPOINT), radius(RADIUS), meri(MERI) {}
 
+	Segment(CVect VECT, Point STARTPOINT, double RADIUS)
+		: vect(VECT), startPoint(STARTPOINT), radius(RADIUS) {}
+
 	double getRadius() const { return radius; }
 
 	CVect getVect() const { return vect; }

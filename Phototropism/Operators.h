@@ -31,6 +31,8 @@ CVect operator-(CVect const &lhs, CVect const &rhs);
 
 CVect& operator+=(CVect &lhs, const CVect &rhs);
 
+CVect& operator-=(CVect &lhs, const CVect &rhs);
+
 CVect& operator*=(CVect &lhs, const double multiplier);
 
 CVect operator*(CVect const &lhs, const double multiplier);

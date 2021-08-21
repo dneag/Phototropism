@@ -196,5 +196,11 @@ double distance(const Point &p, const Point &q);
 // angle (in radians) between p and q
 double findAngBetween(const CVect &p, const CVect &q);
 
+// returns a CVect corresponding to the angles and magnitude passed
+CVect sphAnglesToCartVect(const SphAngles &angles, double mag);
+
+// Returns the angle between the two vectors in radians
+double findAngBetween(const CVect_m &v1, const CVect_m &v2);
+
 #endif /* PhotMath_h */
 

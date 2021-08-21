@@ -131,3 +131,25 @@ double findAngBetween(const CVect &p, const CVect &q)
 
 	return std::acos(std::max(std::min(dotProduct / magProduct, 1.), -1.));
 }
+
+CVect sphAnglesToCartVect(const SphAngles &angles, double mag) {
+
+	CVect v;
+	double lengthTimesSinAzi = mag * std::sin(angles.azi);
+	v.x = lengthTimesSinAzi * std::cos(angles.pol);
+	v.y = mag * std::cos(angles.azi);
+	v.z = lengthTimesSinAzi * std::sin(angles.pol);
+
+	return v;
+}
+
+double findAngBetween(const CVect_m &v1, const CVect_m &v2)
+{
+	double magProduct = v1.mag * v2.mag;
+	if (magProduct == 0.)
+		MStreamUtils::stdOutStream() << "Error; vector has 0 magnitude.\n";
+
+	double dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+
+	return std::acos(std::max(std::min(dotProduct / magProduct, 1.), -1.));
+}

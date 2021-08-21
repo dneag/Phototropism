@@ -63,7 +63,7 @@ class BlockPointGrid {
 	void initiateGrid();
 
 	// Returns the index of the grid unit corresponding to the coordinate passed
-	std::size_t findShiftedIndex(double xCoord, double halfGridSize, double unitSize) const;
+	std::size_t findShiftedIndex(double coord, double halfGridSize, double unitSize) const;
 
 	// Checks that the Point is within the range of the grid. Exits the program if it isn't.
 	bool checkRange_Point(const Point &p) const;
@@ -83,6 +83,10 @@ public:
 	void displayGrid() const;
 
 	MStatus addToUnitDensity(const BlockPoint &bp);
+
+	// Determines the direction that the meristem wants to go
+	// coneRangeAngle represents the maximum angle from meriDirection for block point detection
+	CVect chooseDirection(const Point &meriLoc, const CVect_m &meriDirection, const double coneRangeAngle);
 };
 
 #endif /* BlockPointGrid_h */
