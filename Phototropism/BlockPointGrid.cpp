@@ -67,11 +67,20 @@ std::size_t BlockPointGrid::findShiftedIndex(double coord, double halfGridSize, 
 	// To represent the grid as centered, we must account for a potential additional shift.  We do this by adding 1 to the index
 	// if the remainder from truncating temp is greater than .5.
 	double temp = shiftedCoord / unitSize;
-	std::size_t ind = std::floor(temp);
+
+	std::size_t ind = temp;
+
 	double remainder = temp - ind; 
 	if (remainder >= .5) { ++ind; }
 
 	return ind;
+}
+
+MStatus BlockPointGrid::addBlockPoint(BlockPoint bp) {
+
+	bps.push_back(bp);
+	
+	return addToUnitDensity(bp);
 }
 
 MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
@@ -80,8 +89,11 @@ MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
 		return MS::kFailure;*/
 
 	std::size_t xInd = findShiftedIndex(bp.loc.x, halfGridXSize, xUnitSize);
-	std::size_t yInd = std::floor(bp.loc.y / yUnitSize);
+	std::size_t yInd = bp.loc.y / yUnitSize;
 	std::size_t zInd = findShiftedIndex(bp.loc.z, halfGridZSize, zUnitSize);
+
+	MStreamUtils::stdOutStream() << "point coords: " << bp.loc.x << ", " << bp.loc.y << ", " << bp.loc.z << "\n";
+	MStreamUtils::stdOutStream() << "Indices of Unit: " << xInd << ", " << yInd << ", " << zInd << "\n";
 
 	if (!this->checkRange_Indices(xInd, yInd, zInd)) 
 		return MS::kFailure;
@@ -98,19 +110,25 @@ CVect BlockPointGrid::chooseDirection(const Point &meriLoc, const CVect_m &meriD
 
 	std::size_t xMinIndex = this->findShiftedIndex(std::max(meriLoc.x - detectionRange, -halfGridXSize), halfGridXSize, xUnitSize);
 	std::size_t xMaxIndex = this->findShiftedIndex(std::min(meriLoc.x + detectionRange, halfGridXSize), halfGridXSize, xUnitSize);
-	std::size_t yMinIndex = std::max(meriLoc.y - detectionRange, 0.);
-	std::size_t yMaxIndex = std::min(meriLoc.y + detectionRange, ySize);
+	std::size_t yMinIndex = std::max((meriLoc.y - detectionRange) / yUnitSize, 0.);
+	std::size_t yMaxIndex = std::min(static_cast<int>((meriLoc.y + detectionRange) / yUnitSize), yElements - 1);
 	std::size_t zMinIndex = this->findShiftedIndex(std::max(meriLoc.z - detectionRange, -halfGridZSize), halfGridZSize, zUnitSize);
 	std::size_t zMaxIndex = this->findShiftedIndex(std::min(meriLoc.z + detectionRange, halfGridZSize), halfGridZSize, zUnitSize);
+
+	//MStreamUtils::stdOutStream() << "limits: " << ", " << yUnitSize << ", " << xMaxIndex << ", " << yMinIndex << ", " << yMaxIndex <<
+		//", " << zMinIndex << ", " << zMaxIndex << "\n";
 
 	for (int xI = xMinIndex; xI <= xMaxIndex; ++xI) {
 		for (int yI = yMinIndex; yI <= yMaxIndex; ++yI) {
 			for (int zI = zMinIndex; zI <= zMaxIndex; ++zI) {
 
+				//MStreamUtils::stdOutStream() << "checking unit: " << xI << ", " << yI << ", " << zI << "\n";
+
 				if (grid[xI][yI][zI].density > 0.) {
 
 					CVect_m vectToUnit = grid[xI][yI][zI].center - meriLoc;
 
+					//MStreamUtils::stdOutStream() << "vect to unit: " << vectToUnit << "\n";
 					double angBetween = findAngBetween(meriDirection, vectToUnit);
 
 					if (angBetween < coneRangeAngle) {
@@ -119,7 +137,7 @@ CVect BlockPointGrid::chooseDirection(const Point &meriLoc, const CVect_m &meriD
 						// The length of the vector added to direction represents the strength of the shade produced by the block point
 						// Here we adjust the size of the vector subtracted according to the shade strength
 						double shadeStrength = 1. - (vectToUnit.mag / detectionRange);
-						vectToUnit.resize(shadeStrength);
+						vectToUnit.resize(shadeStrength * grid[xI][yI][zI].density);
 						direction -= vectToUnit;
 					}
 				}
@@ -144,6 +162,18 @@ void BlockPointGrid::displayGrid() const {
 			}
 		}
 	}
+}
+
+void BlockPointGrid::displayBlockPoints() const {
+
+	for (auto bp : bps) 
+		makeSphere(bp.loc, .05);
+}
+
+void BlockPointGrid::displayAll() const {
+
+	this->displayGrid();
+	this->displayBlockPoints();
 }
 
 bool BlockPointGrid::checkRange_Point(const Point &p) const {

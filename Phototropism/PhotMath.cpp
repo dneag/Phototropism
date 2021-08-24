@@ -153,3 +153,14 @@ double findAngBetween(const CVect_m &v1, const CVect_m &v2)
 
 	return std::acos(std::max(std::min(dotProduct / magProduct, 1.), -1.));
 }
+
+double randBetween(double mn, double mx)
+{
+	double range = mx - mn;
+	return mn + ((double)rand() / RAND_MAX)*range;
+}
+
+Point randPoint(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
+
+	return { randBetween(xMin, xMax), randBetween(yMin, yMax), randBetween(zMin, zMax) };
+}

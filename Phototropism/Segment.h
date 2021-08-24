@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "PhotMath.h"
+#include "Operators.h"
 
 // In the larger program, a Meristem class determines much of what happens to Segments
 // In this program it does not at all, we just need two attributes to mimic its usage in BranchMesh
@@ -54,6 +55,8 @@ public:
 	void setStartPoint(const Point &sp) { startPoint = sp; }
 
 	Point getStartPoint() const { return startPoint; }
+
+	Point getEndPoint() const { return startPoint + vect; }
 
 	void addSegAbove(Segment *seg) { segsAbove.push_back(seg); }
 

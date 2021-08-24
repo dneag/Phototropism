@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 #include <maya/MStreamUtils.h>
 
@@ -201,6 +202,10 @@ CVect sphAnglesToCartVect(const SphAngles &angles, double mag);
 
 // Returns the angle between the two vectors in radians
 double findAngBetween(const CVect_m &v1, const CVect_m &v2);
+
+double randBetween(double mn, double mx);
+
+Point randPoint(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax);
 
 #endif /* PhotMath_h */
 

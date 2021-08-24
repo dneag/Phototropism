@@ -80,13 +80,19 @@ public:
 
 	BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double XUNITSIZE, double YUNITSIZE, double ZUNITSIZE, double DETECTIONRANGE);
 
-	void displayGrid() const;
+	MStatus addBlockPoint(BlockPoint bp);
 
 	MStatus addToUnitDensity(const BlockPoint &bp);
 
 	// Determines the direction that the meristem wants to go
 	// coneRangeAngle represents the maximum angle from meriDirection for block point detection
 	CVect chooseDirection(const Point &meriLoc, const CVect_m &meriDirection, const double coneRangeAngle);
+
+	void displayGrid() const;
+
+	void displayBlockPoints() const;
+
+	void BlockPointGrid::displayAll() const;
 };
 
 #endif /* BlockPointGrid_h */
