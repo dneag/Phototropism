@@ -1,3 +1,11 @@
+/*
+	BlockPointGrid.h
+
+	A BlockPointGrid is represented as a 3D cubic grid with a list of BlockPoints.  When new BlockPoints are added or moved, their density
+	is added to the unit they fall in.  A Meristem can check units and decide which direction it wants to grow based on the angles to 
+	those units whose density is greater than 0.
+*/
+
 #pragma once
 #ifndef BlockPointGrid_h
 #define BlockPointGrid_h
@@ -92,7 +100,7 @@ public:
 
 	void displayBlockPoints() const;
 
-	void BlockPointGrid::displayAll() const;
+	void displayAll() const;
 };
 
 #endif /* BlockPointGrid_h */
