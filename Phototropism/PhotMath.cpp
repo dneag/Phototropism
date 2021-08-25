@@ -164,3 +164,12 @@ Point randPoint(double xMin, double xMax, double yMin, double yMax, double zMin,
 
 	return { randBetween(xMin, xMax), randBetween(yMin, yMax), randBetween(zMin, zMax) };
 }
+
+double truncate(double n, int decimals) {
+
+	double mult = std::pow(10, decimals);
+	n *= mult;
+	int n_i = n;
+	double n_d = static_cast<double>(n_i);
+	return n_d /= mult;
+}

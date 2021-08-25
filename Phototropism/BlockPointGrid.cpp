@@ -166,8 +166,11 @@ void BlockPointGrid::displayGrid() const {
 
 void BlockPointGrid::displayBlockPoints() const {
 
-	for (auto bp : bps) 
-		makeSphere(bp.loc, .05);
+	for (auto bp : bps) {
+		int density = bp.density * 1000.;
+		std::string name = "Density--0." + std::to_string(density);
+		makeSphere(bp.loc, .05, name);
+	}
 }
 
 void BlockPointGrid::displayAll() const {

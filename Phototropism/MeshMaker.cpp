@@ -76,7 +76,7 @@ void makeCube(const Point &location, double width, std::string name) {
 	nodeFn.setName(MCubeName);
 }
 
-void makeSphere(const Point &location, double radius)
+void makeSphere(const Point &location, double radius, std::string name)
 {
 	int axisDivisions = 8;
 	int heightDivisions = 8;
@@ -234,5 +234,17 @@ void makeSphere(const Point &location, double radius)
 
 
 	MFnMesh newSphere;
-	newSphere.create(numSphereVerts, numSphereFaces, sphereVertLocs, iaSphereFaceCounts, iaSphereFaceConnects);
+	MObject sphereTransform = newSphere.create(numSphereVerts, numSphereFaces, sphereVertLocs, iaSphereFaceCounts, iaSphereFaceConnects);
+
+	// Give our object a name
+
+	MFnDependencyNode nodeFn;
+	nodeFn.setObject(sphereTransform);
+
+	// Create an MString and pass it to a dependency node's setName()
+	std::string sphereName = name;
+	char sphereName_c[32];
+	strcpy(sphereName_c, sphereName.c_str());
+	MString MSphereName = sphereName_c;
+	nodeFn.setName(MSphereName);
 }

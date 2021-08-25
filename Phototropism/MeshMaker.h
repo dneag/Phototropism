@@ -27,6 +27,6 @@
 
 void makeCube(const Point &location, double width, std::string name);
 
-void makeSphere(const Point &location, double radius);
+void makeSphere(const Point &location, double radius, std::string name);
 
 #endif /* MeshMaker_h */

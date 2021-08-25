@@ -207,5 +207,6 @@ double randBetween(double mn, double mx);
 
 Point randPoint(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax);
 
+double truncate(double n, int decimals);
 #endif /* PhotMath_h */
 
