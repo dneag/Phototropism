@@ -29,4 +29,6 @@ void makeCube(const Point &location, double width, std::string name);
 
 void makeSphere(const Point &location, double radius, std::string name);
 
+void makeArrow(const Point &location, const CVect &vect, std::string name, double radius);
+
 #endif /* MeshMaker_h */

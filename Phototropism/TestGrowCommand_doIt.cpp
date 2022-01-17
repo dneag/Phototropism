@@ -22,140 +22,52 @@
 #include <maya/MFnMesh.h>
 
 #include "TestGrowCommand.h"
-#include "BranchMesh.h"
 #include "PhotMath.h"
 #include "BlockPointGrid.h"
 #include "MeshMaker.h"
 
-namespace {
-
-	// Takes a linked list, starting at rootSeg, and converts it into a list of BranchMeshes
-	std::vector<BranchMesh*> makeManyBMesh(Segment *rootSeg);
-
-	// Delivers the data from each BranchMesh to the MFnMesh create() method
-	void sendMeshesToMaya(std::vector<BranchMesh*> treeMesh);
-}
-
 // When the testGrow command is executed, this method is called
 MStatus TestGrowCommand::doIt(const MArgList &argList) {
+
+	MStreamUtils::stdOutStream() << "\nBEGINNING TESTGROW()\n\n";
 
 	MStatus status;
 
 	MArgDatabase argData(syntax(), argList, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-	BlockPointGrid bpg(3., 3., 3., .2, .2, .2, 4.);
+	double gridSize = 8.25;
+	BlockPointGrid bpg(gridSize, gridSize, gridSize, .25, 4., 30.);
 
-	// Create a bunch of block points and add them to the grid
-	std::size_t totalBlockPoints = 13;
+	// Create a bunch of block points at random locations clustered around another random point, and add them to the grid
+	// ...being careful to keep all points on the grid
+	double clusterRadius = 2.;
+	double clusterRange = (gridSize / 2.) - clusterRadius;
+	Point clusterPoint = randPoint(-clusterRange, clusterRange, clusterRadius, gridSize - clusterRadius, -clusterRange, clusterRange);
+	std::size_t totalBlockPoints = 30;
 	for (int i = 0; i < totalBlockPoints; ++i) {
 
-		Point randP = randPoint(-1.5, 1.5, 0., 3., -1.5, 1.5);
-		bpg.addBlockPoint(BlockPoint(randP, randBetween(0.,1.)));
+		Point randP = randPoint(clusterPoint.x - clusterRadius, clusterPoint.x + clusterRadius, 
+								clusterPoint.y - clusterRadius, clusterPoint.y + clusterRadius,
+								clusterPoint.z - clusterRadius, clusterPoint.z + clusterRadius);
+		BlockPoint *dummyPtr;
+		bpg.addBlockPoint(randP, 1., dummyPtr);
 	}
 
-	// Create one segment to represent the current direction of the meristem, and another to represent the chosen direction
-	Meristem *meri = new Meristem(.01, 8);
-	Segment *meriDirectionSeg = new Segment(sphAnglesToCartVect({ 0.,0. }, .3), { 0.,0.,0. }, .05, meri);
-	Segment *meriChosenDirectionseg = new Segment(bpg.chooseDirection(meriDirectionSeg->getEndPoint(), meriDirectionSeg->getVect(), MM::PI),
-		meriDirectionSeg->getEndPoint(), .05, meri);
-	std::vector<BranchMesh*> meriDirection = makeManyBMesh(meriDirectionSeg);
-	sendMeshesToMaya(meriDirection);
-	std::vector<BranchMesh*> meriNewDirection = makeManyBMesh(meriChosenDirectionseg);
-	sendMeshesToMaya(meriNewDirection);
-	
+	// Make arrow meshes representing the direction that would be chosen at random points on the grid
+	// The chosenDirection vector should correspond to the lightDirection vector of the Unit in which meriLoc falls
+	std::size_t totalMeris = 13;
+	for (int i = 0; i < totalMeris; ++i) {
+
+		Point meriLoc = randPoint(-(gridSize/2.), (gridSize / 2.), .01, gridSize, -(gridSize / 2.), (gridSize / 2.));
+		CVect chosenDirection(0., 0., 0., 0.);
+		double blockage = 0;
+		bpg.getDirectionAndBlockage(meriLoc, chosenDirection, blockage);
+
+		makeArrow(meriLoc, chosenDirection, "chosenDirectionArrow", .01);
+	}
+
 	bpg.displayBlockPoints();
 
-	delete meri;
-	delete meriDirectionSeg;
-	delete meriChosenDirectionseg;
-
 	return MS::kSuccess;
-}
-
-namespace {
-
-	std::vector<BranchMesh*> makeManyBMesh(Segment *rootSeg) {
-
-		std::vector<BranchMesh*> treeMesh;
-
-		std::queue<Segment*> firstSegsOfNewBMeshes;
-		firstSegsOfNewBMeshes.push(rootSeg);
-
-		// Each iteration declares a BranchMesh and the go() method completes it.  
-		// The go() method also finds any segments that mark the beginning of what will be a new BranchMesh, and adds them to the queue
-		while (!firstSegsOfNewBMeshes.empty()) {
-
-			const int orderSides = firstSegsOfNewBMeshes.front()->getMeri()->sides;
-			BranchMesh *bMesh = new BranchMesh(firstSegsOfNewBMeshes.front(), orderSides);
-			treeMesh.push_back(bMesh);
-			std::vector<double> initialPreadjusts(orderSides, 0.);
-			bMesh->go(firstSegsOfNewBMeshes.front(), initialPreadjusts, firstSegsOfNewBMeshes);
-			firstSegsOfNewBMeshes.pop();
-		}
-
-		return treeMesh;
-	}
-
-	void sendMeshesToMaya(std::vector<BranchMesh*> treeMesh) {
-
-		int meshNumber = 0;
-		// deliver the relevant data in each bMesh to the MFnMesh create() method
-		for (auto bMesh : treeMesh)
-		{
-			++meshNumber;
-
-			MFloatPointArray fpaVertices;
-			for (int i = 0; i < bMesh->numVerts(); i++)
-			{
-				Point vert = bMesh->getVert(i);
-				fpaVertices.append(MFloatPoint(vert.x, vert.y, vert.z));
-			}
-
-			MIntArray iaUVCounts;
-			MIntArray iaFaceCounts;
-			for (int i = 0; i < bMesh->numFaces(); i++)
-			{
-				iaFaceCounts.append(bMesh->getFaceCount(i));
-				iaUVCounts.append(bMesh->getFaceCount(i));
-			}
-
-			MFloatArray faU;
-			MFloatArray faV;
-
-			//bMesh->reportInMaya();
-
-			bMesh->calculateUVs();
-
-			if (bMesh->numUs() != bMesh->numFaceConnects()) { std::cout << "NUMBER OF U's != NUMBER OF FACECONNECTS" << std::endl; }
-			if (bMesh->numVs() != bMesh->numFaceConnects()) { std::cout << "NUMBER OF V's != NUMBER OF FACECONNECTS" << std::endl; }
-
-			MIntArray iaUVIDs;
-			MIntArray iaFaceConnects;
-			for (int i = 0; i < bMesh->numFaceConnects(); i++)
-			{
-				iaFaceConnects.append(bMesh->getFaceConnect(i));
-				iaUVIDs.append(i);
-				faU.append(bMesh->getU(i));
-				faV.append(bMesh->getV(i));
-			}
-
-			MFnMesh fnMesh;
-			MObject newTransform = fnMesh.create(bMesh->numVerts(), bMesh->numFaces(), fpaVertices,
-				iaFaceCounts, iaFaceConnects, faU, faV);
-			fnMesh.assignUVs(iaUVCounts, iaUVIDs);
-
-			// Give our object a name
-
-			MFnDependencyNode nodeFn;
-			nodeFn.setObject(newTransform);
-
-			// Create an MString and pass it to a dependency node's setName()
-			std::string groupName_str = "BranchMesh_" + std::to_string(meshNumber);
-			char groupName_c[32];
-			strcpy(groupName_c, groupName_str.c_str());
-			MString groupName = groupName_c;
-			nodeFn.setName(groupName);
-		}
-	}
 }

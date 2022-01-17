@@ -121,37 +121,26 @@ double distance(const Point &p, const Point &q) {
 	return std::sqrt(diffV[0] * diffV[0] + diffV[1] * diffV[1] + diffV[2] * diffV[2]);
 }
 
-double findAngBetween(const CVect &p, const CVect &q)
+double dotProduct(const CVect &a, const CVect &b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+
+double findAngBetween(const CVect &a, const CVect &b)
 {
-	double magProduct = p.getMag() * q.getMag();
+	double magProduct = a.getMag() * b.getMag();
 	if (magProduct == 0.)
 		std::cout << "WARNING: MAGPRODUCT IS ZERO (in findAngBetween())" << std::endl;
 
-	double dotProduct = p.x * q.x + p.y * q.y + p.z * q.z;
-
-	return std::acos(std::max(std::min(dotProduct / magProduct, 1.), -1.));
+	return std::acos(std::max(std::min(dotProduct(a, b) / magProduct, 1.), -1.));
 }
 
 CVect sphAnglesToCartVect(const SphAngles &angles, double mag) {
 
-	CVect v;
 	double lengthTimesSinAzi = mag * std::sin(angles.azi);
-	v.x = lengthTimesSinAzi * std::cos(angles.pol);
-	v.y = mag * std::cos(angles.azi);
-	v.z = lengthTimesSinAzi * std::sin(angles.pol);
+
+	CVect v(lengthTimesSinAzi * std::cos(angles.pol),
+			mag * std::cos(angles.azi),
+			lengthTimesSinAzi * std::sin(angles.pol));
 
 	return v;
-}
-
-double findAngBetween(const CVect_m &v1, const CVect_m &v2)
-{
-	double magProduct = v1.mag * v2.mag;
-	if (magProduct == 0.)
-		MStreamUtils::stdOutStream() << "Error; vector has 0 magnitude.\n";
-
-	double dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-
-	return std::acos(std::max(std::min(dotProduct / magProduct, 1.), -1.));
 }
 
 double randBetween(double mn, double mx)
@@ -165,11 +154,7 @@ Point randPoint(double xMin, double xMax, double yMin, double yMax, double zMin,
 	return { randBetween(xMin, xMax), randBetween(yMin, yMax), randBetween(zMin, zMax) };
 }
 
-double truncate(double n, int decimals) {
+double trunc4(double value) {
 
-	double mult = std::pow(10, decimals);
-	n *= mult;
-	int n_i = n;
-	double n_d = static_cast<double>(n_i);
-	return n_d /= mult;
+	return std::trunc(value * 10000.) / 10000.;
 }

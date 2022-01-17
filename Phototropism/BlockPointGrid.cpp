@@ -1,222 +1,387 @@
 /*
-	BlockPointGrid.cpp
+BlockPointGrid.cpp
 */
 
 #include <math.h>
 
 #include "BlockPointGrid.h"
-#include "Operators.h"
+#include "operators.h"
 #include "MeshMaker.h"
+
+void BlockPointGrid::setIndexVectorsAndMaximums() {
+
+	int maxIndexDiff = detectionRange / unitSize;
+	int xzIndexBound = (maxIndexDiff * 2) + 1; // to ensure that the top center unit is indeed centered, make xzIndexBound odd 
+
+											   // topCenterUnit is really not a vector, just makes sense to use IndexVector since it stores int coords
+	IndexVector topCenterUnit(xzIndexBound / 2, maxIndexDiff, xzIndexBound / 2, CVect(0., 0., 0., 0.), 0.);
+
+	for (int xI = 0; xI < xzIndexBound; ++xI) {
+		for (int yI = 0; yI < maxIndexDiff; ++yI) { // note that no units at the same y index as topCenterUnit will be affected
+			for (int zI = 0; zI < xzIndexBound; ++zI) {
+
+				int xIDist = xI - topCenterUnit.x;
+				int yIDist = yI - topCenterUnit.y;
+				int zIDist = zI - topCenterUnit.z;
+				double indexDistanceToUnit = std::sqrt(xIDist * xIDist + yIDist * yIDist + zIDist * zIDist);
+
+				if (indexDistanceToUnit >= maxIndexDiff)
+					continue;
+
+				// trueVectToUnit is resized to match the true size of the grid
+				CVect trueVectToUnit = CVect(xIDist, yIDist, zIDist, indexDistanceToUnit).resized(indexDistanceToUnit * unitSize);
+
+
+				if (findAngBetween(trueVectToUnit, CVect(0., -1., 0., 1.)) > coneRangeAngle)
+					continue;
+
+				// Feels a little awkward doing this here, but it so happens that this should work.  That is, we will calculate the maximum
+				// blockage and maximum light vector here since we are already looping through the correct range of grid units
+				// What we are adding to maximumBlockage here is the same as shadeStrength times grid[xI][yI][zI].density, since
+				// we are finding the maximum, all densities are 1. so no need to multiply
+
+				double blockageStrength = 1. - (trueVectToUnit.getMag() / detectionRange);
+				/*MStreamUtils::stdOutStream() << "trueVectToUnit.getMag(): " << trueVectToUnit.getMag() << ", shadeStrength: " << shadeStrength
+				<< ", detectionRange: " << detectionRange << "\n";*/
+				blockageStrength = trunc4(blockageStrength);
+				maximumBlockage += blockageStrength;
+				trueVectToUnit.resize(blockageStrength);
+				maximumLightVector += trueVectToUnit;
+
+				// and now we can add the index vector
+				// note that we can make the direction altering effects of block points stronger by increasing the magnitude of
+				// trueVectToUnit (done here using the blockPointIntensity attribute).  However, keep in mind that doing this has two major
+				// consequences: first, units' blockage could exceed maximumBlockage, and second, units' lightDirection 
+				// could face any direction, including downward (see adjustGrid() for how these are applied)
+				trueVectToUnit.resize(blockageStrength*blockPointIntensity);
+				trueVectToUnit.vectTrunc4();
+				IndexVector indexVectToUnit(xIDist, yIDist, zIDist, trueVectToUnit, blockageStrength);
+				indexVectorsToUnitsInCone.push_back(indexVectToUnit);
+			}
+		}
+	}
+
+	// since vectors to units are calculated going downward in the above loops, flip the light vector
+	maximumLightVector.y *= -1.;
+	maximumLightVector.x = trunc4(maximumLightVector.x);
+	maximumLightVector.y = trunc4(maximumLightVector.y);
+	maximumLightVector.z = trunc4(maximumLightVector.z);
+}
 
 void BlockPointGrid::initiateGrid() {
 
-	double xCoord = 0. - halfGridXSize;
+	double xCoord = 0. - halfGridXSize + (unitSize*.5);
 
 	for (int xI = 0; xI < xElements; ++xI) {
-		
+
+		double yCoord = unitSize / 2.;
+
 		grid.push_back(std::vector< std::vector<Unit> >());
-		double yCoord = yUnitSize / 2.;
 
 		for (int yI = 0; yI < yElements; ++yI) {
 
+			double zCoord = 0. - halfGridZSize + (unitSize*.5);
+
 			grid.back().push_back(std::vector<Unit>());
-			double zCoord = 0. - halfGridZSize;
 
 			for (int zI = 0; zI < zElements; ++zI) {
 
-				grid.back().back().push_back(Unit(xCoord, yCoord, zCoord));
+				grid.back().back().push_back(Unit(xCoord, yCoord, zCoord, maximumLightVector.x, maximumLightVector.y, maximumLightVector.z));
 
-				zCoord += zUnitSize;
+				zCoord += unitSize;
 			}
 
-			yCoord += yUnitSize;
+			yCoord += unitSize;
 		}
 
-		xCoord += xUnitSize;
+		xCoord += unitSize;
 	}
 }
 
-BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double XUNITSIZE, double YUNITSIZE, double ZUNITSIZE, double DETECTIONRANGE) {
+BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double UNITSIZE, double DETECTIONRANGE, double baseBPIntensity) {
 
+	unitSize = UNITSIZE;
+
+	// Note to self: after dividing two doubles that divide evenly in reality, the result is represented internally as
+	// ~ .00000000001 less than its integer counterpart.  So truncating will effectively reduce by 1.  Thus the ceil here.
 	xSize = XSIZE;
-	xUnitSize = XUNITSIZE;
-	xElements = std::ceil(XSIZE / XUNITSIZE);
-
+	xElements = std::ceil(XSIZE / UNITSIZE);
 	ySize = YSIZE;
-	yUnitSize = YUNITSIZE;
-	yElements = std::ceil(YSIZE / YUNITSIZE);
-
+	yElements = std::ceil(YSIZE / UNITSIZE);
 	zSize = ZSIZE;
-	zUnitSize = ZUNITSIZE;
-	zElements = std::ceil(ZSIZE / ZUNITSIZE);
-
-	yGridSize = yUnitSize * yElements;
-	halfGridXSize = xUnitSize * (xElements / 2);
-	halfGridZSize = zUnitSize * (zElements / 2);
-
-	this->initiateGrid();
-
+	zElements = std::ceil(ZSIZE / UNITSIZE);
+	gridYSize = unitSize * yElements;
+	halfGridXSize = unitSize * (xElements / 2.);
+	halfGridZSize = unitSize * (zElements / 2.);
 	detectionRange = DETECTIONRANGE;
-}
 
-std::size_t BlockPointGrid::findShiftedIndex(double coord, double halfGridSize, double unitSize) const {
-	
-	// Add halfGridSize to put the coordinate in the positive range. E.g. the range corresponding to grid element indices.
-	double shiftedCoord = coord + halfGridSize;
-
-	// To represent the grid as centered, we must account for a potential additional shift.  We do this by adding 1 to the index
-	// if the remainder from truncating temp is greater than .5.
-	double temp = shiftedCoord / unitSize;
-
-	std::size_t ind = temp;
-
-	double remainder = temp - ind; 
-	if (remainder >= .5) { ++ind; }
-
-	return ind;
-}
-
-MStatus BlockPointGrid::addBlockPoint(BlockPoint bp) {
-
-	bps.push_back(bp);
-	
-	return addToUnitDensity(bp);
-}
-
-MStatus BlockPointGrid::addToUnitDensity(const BlockPoint &bp) {
-
-	/*if (!this->checkRange_Point(bp.loc))
-		return MS::kFailure;*/
-
-	std::size_t xInd = findShiftedIndex(bp.loc.x, halfGridXSize, xUnitSize);
-	std::size_t yInd = bp.loc.y / yUnitSize;
-	std::size_t zInd = findShiftedIndex(bp.loc.z, halfGridZSize, zUnitSize);
-
-	MStreamUtils::stdOutStream() << "point coords: " << bp.loc.x << ", " << bp.loc.y << ", " << bp.loc.z << "\n";
-	MStreamUtils::stdOutStream() << "Indices of Unit: " << xInd << ", " << yInd << ", " << zInd << "\n";
-
-	if (!this->checkRange_Indices(xInd, yInd, zInd)) 
-		return MS::kFailure;
-
-	// Add the density of the BlockPoint to the Unit, up to a maximum of 1.
-	grid[xInd][yInd][zInd].density = std::min(1., grid[xInd][yInd][zInd].density + bp.density);
-
-	return MS::kSuccess;
-}
-
-CVect BlockPointGrid::chooseDirection(const Point &meriLoc, const CVect_m &meriDirection, const double coneRangeAngle) {
-
-	CVect direction(0.,0.,0.);
-
-	std::size_t xMinIndex = this->findShiftedIndex(std::max(meriLoc.x - detectionRange, -halfGridXSize), halfGridXSize, xUnitSize);
-	std::size_t xMaxIndex = this->findShiftedIndex(std::min(meriLoc.x + detectionRange, halfGridXSize), halfGridXSize, xUnitSize);
-	std::size_t yMinIndex = std::max((meriLoc.y - detectionRange) / yUnitSize, 0.);
-	std::size_t yMaxIndex = std::min(static_cast<int>((meriLoc.y + detectionRange) / yUnitSize), yElements - 1);
-	std::size_t zMinIndex = this->findShiftedIndex(std::max(meriLoc.z - detectionRange, -halfGridZSize), halfGridZSize, zUnitSize);
-	std::size_t zMaxIndex = this->findShiftedIndex(std::min(meriLoc.z + detectionRange, halfGridZSize), halfGridZSize, zUnitSize);
-
-	//MStreamUtils::stdOutStream() << "limits: " << ", " << yUnitSize << ", " << xMaxIndex << ", " << yMinIndex << ", " << yMaxIndex <<
-		//", " << zMinIndex << ", " << zMaxIndex << "\n";
-
-	for (int xI = xMinIndex; xI <= xMaxIndex; ++xI) {
-		for (int yI = yMinIndex; yI <= yMaxIndex; ++yI) {
-			for (int zI = zMinIndex; zI <= zMaxIndex; ++zI) {
-
-				//MStreamUtils::stdOutStream() << "checking unit: " << xI << ", " << yI << ", " << zI << "\n";
-
-				if (grid[xI][yI][zI].density > 0.) {
-
-					CVect_m vectToUnit = grid[xI][yI][zI].center - meriLoc;
-
-					//MStreamUtils::stdOutStream() << "vect to unit: " << vectToUnit << "\n";
-					double angBetween = findAngBetween(meriDirection, vectToUnit);
-
-					if (angBetween < coneRangeAngle) {
-
-						// If a block point is farther away it should have less influence on the direction
-						// The length of the vector added to direction represents the strength of the shade produced by the block point
-						// Here we adjust the size of the vector subtracted according to the shade strength
-						double shadeStrength = 1. - (vectToUnit.mag / detectionRange);
-						vectToUnit.resize(shadeStrength * grid[xI][yI][zI].density);
-						direction -= vectToUnit;
-					}
-				}
-			}
-		}
-	}
-
-	return direction.resized(1.);
+	// To make blockPointIntensity proportional to the number of units in detectionRange and in the cone, we multiply baseBPIntensity
+	// by the volume (in units) of the conical section, which is: V = (2/3)*PI*Radius^2*CapHeight
+	double radiusByUnits = detectionRange / unitSize;
+	double capHeight = radiusByUnits - (std::cos(coneRangeAngle)*radiusByUnits);
+	double sectorVolume = (2. / 3.) * MM::PI * radiusByUnits*radiusByUnits * capHeight;
+	// divide by some constant just to keep the number from getting insanely large
+	blockPointIntensity = (baseBPIntensity * sectorVolume) / 1000.;
+	this->setIndexVectorsAndMaximums();
+	this->initiateGrid();
 }
 
 void BlockPointGrid::displayGrid() const {
 
 	for (int xI = 0; xI < xElements; ++xI) {
+
 		for (int yI = 0; yI < yElements; ++yI) {
+
 			for (int zI = 0; zI < zElements; ++zI) {
 
-				std::string unitName = "[" + std::to_string(xI) + "][" + std::to_string(yI) + "][" + std::to_string(zI) + "]" +
+				std::string unitName = "[" + std::to_string(xI) + "][" + std::to_string(yI) + "][" + std::to_string(zI) + "]"; +
 					"_Density: " + std::to_string(grid[xI][yI][zI].density);
 
 				// Assuming the grid units are cubes, this works
-				makeCube(grid[xI][yI][zI].center, xUnitSize, unitName);
+				makeCube(grid[xI][yI][zI].center, unitSize, unitName);
 			}
 		}
 	}
 }
 
+void BlockPointGrid::displayUnitsAffectedByUnit(int uX, int uY, int uZ) const {
+
+	for (auto indexVect : indexVectorsToUnitsInCone) {
+
+		int X = uX + indexVect.x;
+		int Y = uY + indexVect.y;
+		int Z = uZ + indexVect.z;
+
+		if (this->indicesAreInRange(X, Y, Z)) {
+
+			makeCube(grid[X][Y][Z].center, unitSize, "unit");
+		}
+	}
+}
+
+void BlockPointGrid::displayUnitsAffectedByBP(const BlockPoint *bp) const {
+
+	std::size_t xInd = (bp->loc.x + halfGridXSize) / unitSize;
+	std::size_t yInd = bp->loc.y / unitSize;
+	std::size_t zInd = (bp->loc.z + halfGridZSize) / unitSize;
+
+	displayUnitDensity(xInd, yInd, zInd);
+
+	for (auto indexVect : indexVectorsToUnitsInCone) {
+
+		int X = xInd + indexVect.x;
+		int Y = yInd + indexVect.y;
+		int Z = zInd + indexVect.z;
+
+		if (this->indicesAreInRange(X, Y, Z)) {
+
+			displayUnitBlockage(X, Y, Z);
+			//displayUnitDensity(X, Y, Z);
+			displayUnitLightDirection(X, Y, Z);
+		}
+	}
+}
+
+void BlockPointGrid::displayUnitLightDirection(int uX, int uY, int uZ) const {
+
+	// make it so that the arrow's length represents the magnitude of the lightDirection vector, but scaled down so that
+	// the maximum length is equal to unitSize
+	double arrowLength = unitSize * (grid[uX][uY][uZ].lightDirection.getMag() / maximumLightVector.getMag());
+	makeArrow(grid[uX][uY][uZ].center + Point(0., -unitSize*.5, 0.), CVect(grid[uX][uY][uZ].lightDirection).resized(arrowLength), "lightDirectionArrow", .01);
+}
+
+void BlockPointGrid::displayUnitDensity(int uX, int uY, int uZ) const {
+
+	if (grid[uX][uY][uZ].density == 0.)
+		return;
+
+	// a unit with maximum density will show an arrow the same size as itself
+	double arrowLength = unitSize * std::min(grid[uX][uY][uZ].density, 1.);
+	Point arrowStart = grid[uX][uY][uZ].center + Point(-unitSize*.25, -unitSize*.5, 0.);
+	makeArrow(arrowStart, CVect(0., arrowLength, 0., arrowLength), "densityArrow", .01);
+
+}
+
+void BlockPointGrid::displayUnitBlockage(int uX, int uY, int uZ) const {
+
+	if (grid[uX][uY][uZ].blockage == 0.)
+		return;
+
+	// a unit with maximum blockage will show an arrow the same size as itself
+	double arrowLength = unitSize * (grid[uX][uY][uZ].blockage / maximumBlockage);
+	Point arrowStart = grid[uX][uY][uZ].center + Point(unitSize*.25, -unitSize*.5, 0.);
+	makeArrow(arrowStart, CVect(0., arrowLength, 0., arrowLength), "blockageArrow", .01);
+}
+
 void BlockPointGrid::displayBlockPoints() const {
 
 	for (auto bp : bps) {
-		int density = bp.density * 1000.;
+		int density = bp->density * 1000.;
 		std::string name = "Density--0." + std::to_string(density);
-		makeSphere(bp.loc, .05, name);
+		makeSphere(bp->loc, .05, name);
 	}
 }
 
 void BlockPointGrid::displayAll() const {
 
-	this->displayGrid();
 	this->displayBlockPoints();
+
+	for (int xI = 0; xI < xElements; ++xI) {
+
+		for (int yI = 0; yI < yElements; ++yI) {
+
+			for (int zI = 0; zI < zElements; ++zI) {
+
+				displayUnitLightDirection(xI, yI, zI);
+				displayUnitBlockage(xI, yI, zI);
+				displayUnitDensity(xI, yI, zI);
+			}
+		}
+	}
 }
 
-bool BlockPointGrid::checkRange_Point(const Point &p) const {
+MStatus BlockPointGrid::addBlockPoint(const Point loc, double bpDensity, BlockPoint *&ptrForSeg) {
 
-	if (p.x > halfGridXSize || p.x < -halfGridXSize) {
+	std::size_t xInd = (loc.x + halfGridXSize) / unitSize;
+	std::size_t yInd = loc.y / unitSize;
+	std::size_t zInd = (loc.z + halfGridZSize) / unitSize;
+	//MStreamUtils::stdOutStream() << "Adding bp with loc: " << loc << " and indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
+	if (!this->indicesAreInRange_showError(xInd, yInd, zInd))
+		return MS::kFailure;
 
-		MStreamUtils::stdOutStream() << "Error. x coordinate outside of grid.\nAborting\n";
-		return false;
+	BlockPoint *newBP = new BlockPoint(loc, bpDensity, xInd, yInd, zInd);
+	bps.push_back(newBP);
+	ptrForSeg = newBP;
+
+	this->adjustGrid(newBP, add);
+
+	return MS::kSuccess;
+}
+
+MStatus BlockPointGrid::moveBlockPoint(BlockPoint *bp, const Point newLoc) {
+
+	// Calculate the BlockPoint's new indices on the bpg
+	std::size_t xInd = (newLoc.x + halfGridXSize) / unitSize;
+	std::size_t yInd = newLoc.y / unitSize;
+	std::size_t zInd = (newLoc.z + halfGridZSize) / unitSize;
+
+	if (!this->indicesAreInRange_showError(xInd, yInd, zInd))
+		return MS::kFailure;
+
+	if (xInd != bp->gridX || yInd != bp->gridY || zInd != bp->gridZ) {
+
+		this->adjustGrid(bp, subtract);
+		bp->changeGridUnit(xInd, yInd, zInd);
+		this->adjustGrid(bp, add);
 	}
-	else if (p.y > yGridSize || p.y < 0) {
 
-		MStreamUtils::stdOutStream() << "Error. y coordinate outside of grid.\nAborting\n";
-		return false;
-	}
-	else if (p.z > halfGridZSize || p.z < -halfGridZSize) {
+	// set the new location for the block point
+	bp->loc = newLoc;
 
-		MStreamUtils::stdOutStream() << "Error. z coordinate outside of grid.\nAborting\n";
-		return false;
+	return MS::kSuccess;
+}
+
+void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
+
+	// If s is add, bp->density will be multiplied by 1.  If s is subtract, bp->density will be multiplied by -1
+	double densityAdjustment = bp->density * adj;
+
+	double startingUnitDensity = std::min(grid[bp->gridX][bp->gridY][bp->gridZ].density, 1.);
+	grid[bp->gridX][bp->gridY][bp->gridZ].density += densityAdjustment;
+	double currentUnitDensity = std::min(grid[bp->gridX][bp->gridY][bp->gridZ].density, 1.);
+	double densityChange = currentUnitDensity - startingUnitDensity;
+
+	if (densityChange != 0.) {
+
+		for (auto indexVect : indexVectorsToUnitsInCone) {
+
+			int X = bp->gridX + indexVect.x;
+			int Y = bp->gridY + indexVect.y;
+			int Z = bp->gridZ + indexVect.z;
+
+			if (this->indicesAreInRange(X, Y, Z)) {
+
+				if (X == 18 && Y == 6 && Z == 16) {
+					//makeArrow(grid[X][Y][Z].center, grid[X][Y][Z].lightDirection, "lightDirectionBefore", .01);
+					//makeArrow(grid[X][Y][Z].center, indexVect.trueVect.resized(indexVect.trueVect.getMag() * densityChange), "vectorAdded", .01);
+					//MStreamUtils::stdOutStream() << "Adding bp effects for unit " << X << ", " << Y << ", " << Z << ", densityChange: " << densityChange << "\n";
+				}
+
+				grid[X][Y][Z].lightDirection += indexVect.trueVect.resized(indexVect.trueVect.getMag() * densityChange);
+				grid[X][Y][Z].blockage += indexVect.blockageStrength * densityChange;
+				//MStreamUtils::stdOutStream() << "lightDirection after: " << grid[X][Y][Z].lightDirection << ", blockage after: " << grid[X][Y][Z].blockage << "\n";
+			}
+		}
 	}
+}
+
+MStatus BlockPointGrid::getDirectionAndBlockage(const Point &meriLoc, CVect &chosenDirection, double &blockage) const {
+
+	std::size_t xInd = (meriLoc.x + halfGridXSize) / unitSize;
+	std::size_t yInd = meriLoc.y / unitSize;
+	std::size_t zInd = (meriLoc.z + halfGridZSize) / unitSize;
+
+	if (!this->indicesAreInRange_showError(xInd, yInd, zInd))
+		return MS::kFailure;
+
+	this->displayUnitLightDirection(xInd, yInd, zInd);
+	//this->displayUnitBlockage(xInd, yInd, zInd);
+	// chosenDirection should have a magnitude of 1, so we need to resize lightDirection here
+	chosenDirection = CVect(grid[xInd][yInd][zInd].lightDirection).resized(1.);
+	blockage = grid[xInd][yInd][zInd].blockage / maximumBlockage;
+
+	return MS::kSuccess;
+}
+
+bool BlockPointGrid::indicesAreInRange(int x, int y, int z) const {
+
+	if (x >= xElements || x < 0)
+		return false;
+	else if (y >= yElements || y < 0)
+		return false;
+	else if (z >= zElements || z < 0)
+		return false;
 
 	return true;
 }
 
-bool BlockPointGrid::checkRange_Indices(int x, int y, int z) const {
+bool BlockPointGrid::indicesAreInRange_showError(int x, int y, int z) const {
 
-	if (x >= grid.size() || x < 0) {
+	if (x >= xElements || x < 0) {
 
 		MStreamUtils::stdOutStream() << "Error. x index outside of grid.\nAborting\n";
 		return false;
 	}
-	else if (y >= grid[0].size() || y < 0) {
+	else if (y >= yElements || y < 0) {
 
 		MStreamUtils::stdOutStream() << "Error. y index outside of grid.\nAborting\n";
 		return false;
 	}
-	else if (z >= grid[0][0].size() || z < 0) {
+	else if (z >= zElements || z < 0) {
 
 		MStreamUtils::stdOutStream() << "Error. z index outside of grid.\nAborting\n";
 		return false;
 	}
 
 	return true;
+}
+
+void BlockPointGrid::addBlockPointsThroughGridLevels(int xMin, int xMax, int yMin, int yMax, int zMin, int zMax) {
+
+	if (!indicesAreInRange(xMin, yMin, zMin) || !indicesAreInRange(xMax, yMax, zMax)) {
+		MStreamUtils::stdOutStream() << "Indices are out of range for adding block points\n";
+		return;
+	}
+
+	for (int xI = xMin; xI <= xMax; ++xI) {
+
+		for (int yI = yMin; yI <= yMax; ++yI) {
+
+			for (int zI = zMin; zI <= zMax; ++zI) {
+
+				BlockPoint *dummyPtr;
+				this->addBlockPoint(grid[xI][yI][zI].center, 1., dummyPtr);
+			}
+		}
+	}
 }

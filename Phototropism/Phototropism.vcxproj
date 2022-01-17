@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="BlockPointGrid.cpp" />
     <ClCompile Include="BranchMesh.cpp" />
+    <ClCompile Include="CVect.cpp" />
     <ClCompile Include="MeshMaker.cpp" />
     <ClCompile Include="Operators.cpp" />
     <ClCompile Include="PhotMath.cpp" />
@@ -27,10 +28,13 @@
   <ItemGroup>
     <ClInclude Include="BranchMesh.h" />
     <ClInclude Include="BlockPointGrid.h" />
+    <ClInclude Include="CVect.h" />
     <ClInclude Include="MeshMaker.h" />
     <ClInclude Include="Operators.h" />
     <ClInclude Include="PhotMath.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="Segment.h" />
+    <ClInclude Include="SphAngles.h" />
     <ClInclude Include="TestGrowCommand.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

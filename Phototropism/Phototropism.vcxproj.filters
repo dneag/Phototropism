@@ -47,6 +47,9 @@
     <ClCompile Include="MeshMaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CVect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestGrowCommand.h">
@@ -68,6 +71,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MeshMaker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CVect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SphAngles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -31,7 +31,7 @@ BranchMesh::BranchMesh(Segment *firstSeg, const int currentOrderSides) {
 	else {
 
 		double distTimesSinAzi = initialRadius * MM::sinPID2;
-		CVect vectorToStartVert;
+		Point vectorToStartVert;
 		double polarAngleToNextVert = findVectorAngles(firstSeg->getVect()).pol + MM::PID2;
 
 		for (int i = 0; i<sides; i++)

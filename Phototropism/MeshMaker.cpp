@@ -1,7 +1,7 @@
 /*
-	MeshMaker.cpp
+MeshMaker.cpp
 
-	Functions for making simple shapes in Maya
+Functions for making simple shapes in Maya
 */
 
 #include "MeshMaker.h"
@@ -72,7 +72,7 @@ void makeCube(const Point &location, double width, std::string name) {
 	std::string cubeName = name;
 	char cubeName_c[32];
 	strcpy(cubeName_c, cubeName.c_str());
-	MString MCubeName = cubeName_c;
+	MString MCubeName(cubeName_c);
 	nodeFn.setName(MCubeName);
 }
 
@@ -247,4 +247,147 @@ void makeSphere(const Point &location, double radius, std::string name)
 	strcpy(sphereName_c, sphereName.c_str());
 	MString MSphereName = sphereName_c;
 	nodeFn.setName(MSphereName);
+}
+
+void makeArrow(const Point &location, const CVect &vect, std::string name, double radius) {
+
+	const int numVerts = 13;
+	const int numFaces = 12;
+	Point vertArray[13];
+	int vertIndex = 0;
+	Point arrowCenter = location;
+
+	// create a space oriented to the vector
+	Space vectorSpace(findVectorAngles(vect));
+
+	// create the first loop of vertices
+	double pol = 0.;
+	while (vertIndex < 4) {
+		vertArray[vertIndex] = arrowCenter + vectorSpace.makeVector(pol, MM::PID2, radius);
+		pol += MM::PID2;
+		vertIndex++;
+	}
+
+	// move up the center of the arrow
+	arrowCenter += vect.resized(vect.getMag() * .8);
+
+	// create the second loop of vertices, completing the shaft of the arrow
+	while (vertIndex < 8) {
+		vertArray[vertIndex] = arrowCenter + vectorSpace.makeVector(pol, MM::PID2, radius);
+		pol += MM::PID2;
+		vertIndex++;
+	}
+
+	// create the third loop of vertices
+	while (vertIndex < 12) {
+		vertArray[vertIndex] = arrowCenter + vectorSpace.makeVector(pol, MM::PID2, radius * 2.5);
+		pol += MM::PID2;
+		vertIndex++;
+	}
+
+	// create the last vertex, completing the head of the arrow
+	vertArray[vertIndex] = location + vect;
+
+	MFloatPointArray meshVertLocs;
+	MIntArray meshFaceConnects;
+	MIntArray meshFaceCounts;
+
+	for (int i = 0; i<13; i++)
+		meshVertLocs.append(MFloatPoint(vertArray[i].x, vertArray[i].y, vertArray[i].z));
+
+	meshFaceConnects.append(0);
+	meshFaceConnects.append(1);
+	meshFaceConnects.append(5);
+	meshFaceConnects.append(4);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(1);
+	meshFaceConnects.append(2);
+	meshFaceConnects.append(6);
+	meshFaceConnects.append(5);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(2);
+	meshFaceConnects.append(3);
+	meshFaceConnects.append(7);
+	meshFaceConnects.append(6);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(3);
+	meshFaceConnects.append(0);
+	meshFaceConnects.append(4);
+	meshFaceConnects.append(7);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(4);
+	meshFaceConnects.append(5);
+	meshFaceConnects.append(9);
+	meshFaceConnects.append(8);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(5);
+	meshFaceConnects.append(6);
+	meshFaceConnects.append(10);
+	meshFaceConnects.append(9);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(6);
+	meshFaceConnects.append(7);
+	meshFaceConnects.append(11);
+	meshFaceConnects.append(10);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(7);
+	meshFaceConnects.append(4);
+	meshFaceConnects.append(8);
+	meshFaceConnects.append(11);
+
+	meshFaceCounts.append(4);
+
+	meshFaceConnects.append(8);
+	meshFaceConnects.append(9);
+	meshFaceConnects.append(12);
+
+	meshFaceCounts.append(3);
+
+	meshFaceConnects.append(9);
+	meshFaceConnects.append(10);
+	meshFaceConnects.append(12);
+
+	meshFaceCounts.append(3);
+
+	meshFaceConnects.append(10);
+	meshFaceConnects.append(11);
+	meshFaceConnects.append(12);
+
+	meshFaceCounts.append(3);
+
+	meshFaceConnects.append(11);
+	meshFaceConnects.append(8);
+	meshFaceConnects.append(12);
+
+	meshFaceCounts.append(3);
+
+
+	MFnMesh fnArrow;
+	MObject arrowTransform = fnArrow.create(numVerts, numFaces, meshVertLocs, meshFaceCounts, meshFaceConnects);
+
+	// Give our object a name
+
+	MFnDependencyNode nodeFn;
+	nodeFn.setObject(arrowTransform);
+
+	// Create an MString and pass it to a dependency node's setName()
+	std::string arrowName = name;
+	char arrowName_c[32];
+	strcpy(arrowName_c, arrowName.c_str());
+	MString MArrowName(arrowName_c);
+	nodeFn.setName(MArrowName);
 }
