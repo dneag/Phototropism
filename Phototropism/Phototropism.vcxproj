@@ -22,8 +22,8 @@
     <ClCompile Include="Operators.cpp" />
     <ClCompile Include="PhotMath.cpp" />
     <ClCompile Include="pluginMain.cpp" />
-    <ClCompile Include="TestGrowCommand_doIt.cpp" />
-    <ClCompile Include="TestGrowCommand_newSyntax.cpp" />
+    <ClCompile Include="TestBPGCommand_doIt.cpp" />
+    <ClCompile Include="TestBPGCommand_newSyntax.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BranchMesh.h" />
@@ -35,7 +35,7 @@
     <ClInclude Include="Point.h" />
     <ClInclude Include="Segment.h" />
     <ClInclude Include="SphAngles.h" />
-    <ClInclude Include="TestGrowCommand.h" />
+    <ClInclude Include="TestBPGCommand.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>

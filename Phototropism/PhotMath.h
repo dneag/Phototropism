@@ -1,7 +1,5 @@
 /*
 	PhotMath.h
-
-	Mathematical classes and functions
 */
 
 #pragma once
@@ -40,23 +38,23 @@ class Space
 
 public:
 
-	// create a Space oriented to the angles parameter, the angles represent the positive y-axis
+	// Create a Space oriented to the angles parameter, the angles represent the positive y-axis
 	Space(SphAngles angles);
 
-	// takes spherical coordinates as arguments and returns a CVect relative to the current orientation
+	// Takes spherical coordinates as arguments and returns a CVect relative to the current orientation
 	CVect makeVector(double polar, double azimuth, double distance) const;
 };
 
-// polar angles of the CVect passed
+// Polar angles of the CVect passed
 SphAngles findVectorAngles(const CVect &v);
 
-// distance between p and q
+// Distance between p and q
 double distance(const Point &p, const Point &q);
 
-// angle (in radians) between p and q
+// Angle (in radians) between a and b
 double findAngBetween(const CVect &a, const CVect &b);
 
-// returns a CVect corresponding to the angles and magnitude passed
+// Returns a CVect corresponding to the angles and magnitude passed
 CVect sphAnglesToCartVect(const SphAngles &angles, double mag);
 
 double randBetween(double mn, double mx);

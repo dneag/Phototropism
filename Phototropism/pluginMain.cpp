@@ -8,7 +8,7 @@
 
 #include <maya/MFnPlugin.h>
 
-#include "TestGrowCommand.h"
+#include "TestBPGCommand.h"
 
 MStatus initializePlugin( MObject obj )
 //
@@ -24,7 +24,7 @@ MStatus initializePlugin( MObject obj )
 	MStatus   status;
 	MFnPlugin plugin( obj, "", "2018", "Any");
 
-	status = plugin.registerCommand("testGrow", TestGrowCommand::creator, TestGrowCommand::newSyntax);
+	status = plugin.registerCommand("testBPG", TestGrowCommand::creator, TestGrowCommand::newSyntax);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return status;
@@ -43,7 +43,7 @@ MStatus uninitializePlugin( MObject obj )
 	MStatus   status;
 	MFnPlugin plugin( obj );
 
-	status = plugin.deregisterCommand("testGrow");
+	status = plugin.deregisterCommand("testBPG");
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return status;

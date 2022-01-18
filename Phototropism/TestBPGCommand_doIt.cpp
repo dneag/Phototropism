@@ -3,7 +3,7 @@
 
 	Defines doIt() method of TestGrowCommand
 
-	doIt() is the method called when the user executes the command "testGrow"
+	doIt() is the method called when the user executes the command "testBPG"
 */
 
 #include <iostream>
@@ -21,12 +21,12 @@
 #include <maya/MIntArray.h>
 #include <maya/MFnMesh.h>
 
-#include "TestGrowCommand.h"
+#include "TestBPGCommand.h"
 #include "PhotMath.h"
 #include "BlockPointGrid.h"
 #include "MeshMaker.h"
 
-// When the testGrow command is executed, this method is called
+// When the testBPG command is executed, this method is called
 MStatus TestGrowCommand::doIt(const MArgList &argList) {
 
 	MStreamUtils::stdOutStream() << "\nBEGINNING TESTGROW()\n\n";

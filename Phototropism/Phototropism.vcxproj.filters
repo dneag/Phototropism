@@ -26,9 +26,6 @@
     <ClCompile Include="pluginMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TestGrowCommand_doIt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BranchMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PhotMath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TestGrowCommand_newSyntax.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BlockPointGrid.cpp">
@@ -50,11 +44,14 @@
     <ClCompile Include="CVect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestBPGCommand_doIt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestBPGCommand_newSyntax.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestGrowCommand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BranchMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -80,6 +77,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SphAngles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestBPGCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
