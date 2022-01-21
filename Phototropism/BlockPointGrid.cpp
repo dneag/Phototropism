@@ -13,7 +13,7 @@ void BlockPointGrid::setIndexVectorsAndMaximums() {
 	int maxIndexDiff = detectionRange / unitSize;
 	int xzIndexBound = (maxIndexDiff * 2) + 1; // to ensure that the top center unit is indeed centered, make xzIndexBound odd 
 
-											   // topCenterUnit is really not a vector, just makes sense to use IndexVector since it stores int coords
+	// topCenterUnit is really not a vector, just makes sense to use IndexVector since it stores int coords
 	IndexVector topCenterUnit(xzIndexBound / 2, maxIndexDiff, xzIndexBound / 2, CVect(0., 0., 0., 0.), 0.);
 
 	for (int xI = 0; xI < xzIndexBound; ++xI) {
@@ -48,13 +48,11 @@ void BlockPointGrid::setIndexVectorsAndMaximums() {
 				trueVectToUnit.resize(blockageStrength);
 				maximumLightVector += trueVectToUnit;
 
-				// and now we can add the index vector
-				// note that we can make the direction altering effects of block points stronger by increasing the magnitude of
-				// trueVectToUnit (done here using the blockPointIntensity attribute).  However, keep in mind that doing this has two major
+				// And now we can add the index vector
+				// Note that we can make the direction altering effects of block points stronger by increasing the magnitude of
+				// trueVectToUnit (done here using the intensity attribute).  However, keep in mind that doing this has two major
 				// consequences: first, units' blockage could exceed maximumBlockage, and second, units' lightDirection 
 				// could face any direction, including downward (see adjustGrid() for how these are applied)
-				trueVectToUnit.resize(blockageStrength*blockPointIntensity);
-				trueVectToUnit.vectTrunc4();
 				IndexVector indexVectToUnit(xIDist, yIDist, zIDist, trueVectToUnit, blockageStrength);
 				indexVectorsToUnitsInCone.push_back(indexVectToUnit);
 			}
@@ -63,9 +61,14 @@ void BlockPointGrid::setIndexVectorsAndMaximums() {
 
 	// since vectors to units are calculated going downward in the above loops, flip the light vector
 	maximumLightVector.y *= -1.;
+
 	maximumLightVector.x = trunc4(maximumLightVector.x);
 	maximumLightVector.y = trunc4(maximumLightVector.y);
 	maximumLightVector.z = trunc4(maximumLightVector.z);
+
+	// Resize all index vectors' trueVects to account for intensity
+	for (auto &v : indexVectorsToUnitsInCone) 
+		v.trueVect.resize(maximumLightVector.getMag() * intensity);
 }
 
 void BlockPointGrid::initiateGrid() {
@@ -98,7 +101,8 @@ void BlockPointGrid::initiateGrid() {
 	}
 }
 
-BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double UNITSIZE, double DETECTIONRANGE, double baseBPIntensity) {
+BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double UNITSIZE, double DETECTIONRANGE, double CONERANGEANGLE,
+							   double INTENSITY) {
 
 	unitSize = UNITSIZE;
 
@@ -114,14 +118,8 @@ BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double 
 	halfGridXSize = unitSize * (xElements / 2.);
 	halfGridZSize = unitSize * (zElements / 2.);
 	detectionRange = DETECTIONRANGE;
-
-	// To make blockPointIntensity proportional to the number of units in detectionRange and in the cone, we multiply baseBPIntensity
-	// by the volume (in units) of the conical section, which is: V = (2/3)*PI*Radius^2*CapHeight
-	double radiusByUnits = detectionRange / unitSize;
-	double capHeight = radiusByUnits - (std::cos(coneRangeAngle)*radiusByUnits);
-	double sectorVolume = (2. / 3.) * MM::PI * radiusByUnits*radiusByUnits * capHeight;
-	// divide by some constant just to keep the number from getting insanely large
-	blockPointIntensity = (baseBPIntensity * sectorVolume) / 1000.;
+	coneRangeAngle = CONERANGEANGLE;
+	intensity = INTENSITY;
 	this->setIndexVectorsAndMaximums();
 	this->initiateGrid();
 }
@@ -137,11 +135,21 @@ void BlockPointGrid::displayGrid() const {
 				std::string unitName = "[" + std::to_string(xI) + "][" + std::to_string(yI) + "][" + std::to_string(zI) + "]"; +
 					"_Density: " + std::to_string(grid[xI][yI][zI].density);
 
+				this->displayUnitLightDirection(xI, yI, zI);
+				this->displayUnitBlockage(xI, yI, zI);
+				this->displayUnitDensity(xI, yI, zI);
+
 				// Assuming the grid units are cubes, this works
-				makeCube(grid[xI][yI][zI].center, unitSize, unitName);
+				//makeCube(grid[xI][yI][zI].center, unitSize, unitName);
 			}
 		}
 	}
+}
+
+void BlockPointGrid::displayGridBorder() const {
+
+	// assumes cubic grid
+	makeCube(Point(0., ySize / 2., 0.), xSize, "gridBorder"); 
 }
 
 void BlockPointGrid::displayUnitsAffectedByUnit(int uX, int uY, int uZ) const {
@@ -290,10 +298,11 @@ void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 	grid[bp->gridX][bp->gridY][bp->gridZ].density += densityAdjustment;
 	double currentUnitDensity = std::min(grid[bp->gridX][bp->gridY][bp->gridZ].density, 1.);
 	double densityChange = currentUnitDensity - startingUnitDensity;
+	double maxLVMag = maximumLightVector.getMag();
 
 	if (densityChange != 0.) {
 
-		for (auto indexVect : indexVectorsToUnitsInCone) {
+		for (const auto &indexVect : indexVectorsToUnitsInCone) {
 
 			int X = bp->gridX + indexVect.x;
 			int Y = bp->gridY + indexVect.y;
@@ -308,8 +317,8 @@ void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 				}
 
 				grid[X][Y][Z].lightDirection += indexVect.trueVect.resized(indexVect.trueVect.getMag() * densityChange);
+				grid[X][Y][Z].lightDirection.resize(maxLVMag);
 				grid[X][Y][Z].blockage += indexVect.blockageStrength * densityChange;
-				//MStreamUtils::stdOutStream() << "lightDirection after: " << grid[X][Y][Z].lightDirection << ", blockage after: " << grid[X][Y][Z].blockage << "\n";
 			}
 		}
 	}

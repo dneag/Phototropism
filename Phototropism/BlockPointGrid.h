@@ -111,7 +111,7 @@ class BlockPointGrid {
 	// The strength of the effect that BlockPoints will have on units' lightDirection
 	// This value must be proportional to the number of units within the conical section - with coneRangeAngle as its angle - of the sphere
 	// with detectionRange as its radius. See setIndexVectorsAndMaximums() for how it is used
-	double blockPointIntensity;
+	double intensity;
 
 	// When updating the grid, these index vectors will be added to the indices of the unit holding a newly placed or moved block point in order 
 	// to access each unit affected by the block point.  That is, each index vector points to one of the units within the cone effected by the block point
@@ -142,9 +142,11 @@ public:
 
 	// All units are assumed to be cubes
 	// XSIZE, YSIZE, and ZSIZE should divide evenly by UNITSIZE
-	BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double UNITSIZE, double DETECTIONRANGE, double baseBPIntensity);
+	BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double UNITSIZE, double DETECTIONRANGE, double CONERANGEANGLE, double INTENSITY);
 
 	void displayGrid() const;
+
+	void displayGridBorder() const;
 
 	// Arguments are the indices of the unit doing the affecting
 	void displayUnitsAffectedByUnit(int uX, int uY, int uZ) const;

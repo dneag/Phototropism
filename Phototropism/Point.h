@@ -26,6 +26,18 @@ struct Point
 	}
 
 	double getMag() const { return std::sqrt(x*x + y*y + z*z); }
+
+	void resize(double newLength) {
+
+		double mag = std::sqrt(x*x + y*y + z*z);
+		if (mag == 0.)
+			MStreamUtils::stdOutStream() << "POINT LENGTH IS ZERO (in Point::resize())\n";
+
+		double normalizer = newLength / mag;
+		x *= normalizer;
+		y *= normalizer;
+		z *= normalizer;
+	}
 };
 
 #endif /* Point.h */
