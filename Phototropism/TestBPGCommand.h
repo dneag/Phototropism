@@ -1,29 +1,29 @@
 /*
-	TestGrowCommand.h
+	TestBPGCommand.h
 
-	Creates the TestGrowCommand class
+	Creates the TestBPGCommand class
 */
 
 #pragma once
-#ifndef TestGrowCommand_h
-#define TestGrowCommand_h
+#ifndef TestBPGCommand_h
+#define TestBPGCommand_h
 
 #include <maya/MPxCommand.h>
 
-class TestGrowCommand : public MPxCommand
+class TestBPGCommand : public MPxCommand
 {
 public:
 
-	TestGrowCommand() {}
+	TestBPGCommand() {}
 
 	virtual MStatus doIt(const MArgList& argList);
 
 	static void* creator() {
 
-		return new TestGrowCommand;
+		return new TestBPGCommand;
 	}
 
 	static MSyntax newSyntax();
 };
 
-#endif /* TestGrowCommand_h */
+#endif /* TestBPGCommand_h */

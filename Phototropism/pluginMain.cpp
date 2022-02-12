@@ -24,7 +24,7 @@ MStatus initializePlugin( MObject obj )
 	MStatus   status;
 	MFnPlugin plugin( obj, "", "2018", "Any");
 
-	status = plugin.registerCommand("testBPG", TestGrowCommand::creator, TestGrowCommand::newSyntax);
+	status = plugin.registerCommand("testBPG", TestBPGCommand::creator, TestBPGCommand::newSyntax);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	return status;

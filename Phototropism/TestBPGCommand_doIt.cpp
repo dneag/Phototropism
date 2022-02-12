@@ -1,7 +1,7 @@
 /*
 	TestGrowCommand_doIt.cpp
 
-	Defines doIt() method of TestGrowCommand
+	Defines doIt() method of TestBPGCommand
 
 	doIt() is the method called when the user executes the command "testBPG"
 */
@@ -27,7 +27,7 @@
 #include "MeshMaker.h"
 
 // When the testBPG command is executed, this method is called
-MStatus TestGrowCommand::doIt(const MArgList &argList) {
+MStatus TestBPGCommand::doIt(const MArgList &argList) {
 
 	MStreamUtils::stdOutStream() << "\nBEGINNING TESTBPG()\n\n";
 

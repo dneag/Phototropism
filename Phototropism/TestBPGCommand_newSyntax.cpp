@@ -1,5 +1,5 @@
 /*
-	TestGrowCommand_newSyntax.cpp
+	TestBPGCommand_newSyntax.cpp
 
 	Defines the newSyntax() method of TestGrowCommand
 */
@@ -8,7 +8,7 @@
 
 #include <maya/MSyntax.h>
 
-MSyntax TestGrowCommand::newSyntax() {
+MSyntax TestBPGCommand::newSyntax() {
 
 	MSyntax syntax;
 
