@@ -36,7 +36,6 @@ MStatus TestBPGCommand::doIt(const MArgList &argList) {
 	MArgDatabase argData(syntax(), argList, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
-
 	double gridSize = 3.25;
 	BlockPointGrid bpg(gridSize, gridSize, gridSize, .25, 2.4, (MM::PI / 8.), .5);
 	bpg.displayGridBorder();

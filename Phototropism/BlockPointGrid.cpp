@@ -108,13 +108,10 @@ BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double 
 
 	// Note to self: after dividing two doubles that divide evenly in reality, the result is represented internally as
 	// ~ .00000000001 less than its integer counterpart.  So truncating will effectively reduce by 1.  Thus the ceil here.
-	xSize = XSIZE;
+
 	xElements = std::ceil(XSIZE / UNITSIZE);
-	ySize = YSIZE;
 	yElements = std::ceil(YSIZE / UNITSIZE);
-	zSize = ZSIZE;
 	zElements = std::ceil(ZSIZE / UNITSIZE);
-	gridYSize = unitSize * yElements;
 	halfGridXSize = unitSize * (xElements / 2.);
 	halfGridZSize = unitSize * (zElements / 2.);
 	detectionRange = DETECTIONRANGE;
@@ -149,7 +146,7 @@ void BlockPointGrid::displayGrid() const {
 void BlockPointGrid::displayGridBorder() const {
 
 	// assumes cubic grid
-	makeCube(Point(0., ySize / 2., 0.), xSize, "gridBorder"); 
+	makeCube(Point(0., (yElements * unitSize) / 2., 0.), (xElements * unitSize), "gridBorder"); 
 }
 
 void BlockPointGrid::displayUnitsAffectedByUnit(int uX, int uY, int uZ) const {

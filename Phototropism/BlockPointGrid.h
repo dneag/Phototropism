@@ -91,14 +91,11 @@ class BlockPointGrid {
 	// number.  E.g. xSize / xUnitSize is always an odd number.  Also, this means that the center element itself is centered on
 	// the Maya grid.  E.g. the x and z coordinates at the center of the center element are 0. and 0.
 	std::vector< std::vector< std::vector<Unit> > > grid;
-	double xSize;
-	double ySize;
-	double zSize;
+
 	double unitSize;
 	int xElements;
 	int yElements;
 	int zElements;
-	double gridYSize;
 	double halfGridXSize;
 	double halfGridZSize;
 
