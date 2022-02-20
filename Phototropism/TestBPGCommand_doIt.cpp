@@ -23,13 +23,12 @@
 
 #include "TestBPGCommand.h"
 #include "PhotMath.h"
-#include "BlockPointGrid.h"
 #include "MeshMaker.h"
 
-// When the testBPG command is executed, this method is called
-MStatus TestBPGCommand::doIt(const MArgList &argList) {
+#include "BlockPointGrid.h"
 
-	MStreamUtils::stdOutStream() << "\nBEGINNING TESTBPG()\n\n";
+// When the testBPG() command is executed, this method is called
+MStatus TestBPGCommand::doIt(const MArgList &argList) {
 
 	MStatus status;
 
@@ -39,7 +38,8 @@ MStatus TestBPGCommand::doIt(const MArgList &argList) {
 	double gridSize = 3.25;
 	BlockPointGrid bpg(gridSize, gridSize, gridSize, .25, 2.4, (MM::PI / 8.), .5);
 	bpg.displayGridBorder();
-	//bpg.displayGrid();
+	bpg.displayGrid();
+
 	//bpg.displayUnitsAffectedByUnit(4, 10, 4);
 	BlockPoint *bp;
 	bpg.addBlockPoint(Point(-.45, 2.7, -.45), 1., bp);

@@ -46,17 +46,17 @@ class BlockPointGrid {
 
 	struct Unit {
 
-		Point center;
+		// a vector indicating the direction towards the most light
 		Point lightDirection;
-
 		// A unit's density is the sum of the densities of all block points in it.  While it can hold any number, it is effectively never
 		// greater than one nor less than zero.  This is enforced in addBlockPoint() and moveBlockPoint().  The reason we don't clamp the
 		// values between 1 and 0 when storing in this variable is that we need to be able to subtract block points' densities in the future,
 		// which, if density were capped at 1, would lead to negative/inaccurate density values since there can be many block points in a unit.
 		// Another way to handle this would be to store a separate variable for the full density value
 		double density = 0.;
-
 		double blockage = 0.;
+
+		Point center;
 
 		Unit(double cX, double cY, double cZ, double ldX, double ldY, double ldZ) {
 

@@ -295,86 +295,45 @@ void makeArrow(const Point &location, const CVect &vect, std::string name, doubl
 	for (int i = 0; i<13; i++)
 		meshVertLocs.append(MFloatPoint(vertArray[i].x, vertArray[i].y, vertArray[i].z));
 
-	meshFaceConnects.append(0);
-	meshFaceConnects.append(1);
-	meshFaceConnects.append(5);
-	meshFaceConnects.append(4);
+	// make faceConnects and counts for quads
+	for (int i = 0; i < 8; i++) {
 
-	meshFaceCounts.append(4);
+		if (i % 4 != 3) {
 
-	meshFaceConnects.append(1);
-	meshFaceConnects.append(2);
-	meshFaceConnects.append(6);
-	meshFaceConnects.append(5);
+			meshFaceConnects.append(i);
+			meshFaceConnects.append(i + 1);
+			meshFaceConnects.append(i + 5);
+			meshFaceConnects.append(i + 4);
+		}
+		else {
 
-	meshFaceCounts.append(4);
+			meshFaceConnects.append(i);
+			meshFaceConnects.append(i - 3);
+			meshFaceConnects.append(i + 1);
+			meshFaceConnects.append(i + 4);
+		}
 
-	meshFaceConnects.append(2);
-	meshFaceConnects.append(3);
-	meshFaceConnects.append(7);
-	meshFaceConnects.append(6);
+		meshFaceCounts.append(4);
+	}
 
-	meshFaceCounts.append(4);
 
-	meshFaceConnects.append(3);
-	meshFaceConnects.append(0);
-	meshFaceConnects.append(4);
-	meshFaceConnects.append(7);
+	// make faceConnects and counts for tris
+	for (int i = 8; i < 12; i++) {
 
-	meshFaceCounts.append(4);
+		if (i % 4 != 3) {
 
-	meshFaceConnects.append(4);
-	meshFaceConnects.append(5);
-	meshFaceConnects.append(9);
-	meshFaceConnects.append(8);
+			meshFaceConnects.append(i);
+			meshFaceConnects.append(i + 1);
+		}
+		else {
 
-	meshFaceCounts.append(4);
+			meshFaceConnects.append(i);
+			meshFaceConnects.append(i - 3);
+		}
 
-	meshFaceConnects.append(5);
-	meshFaceConnects.append(6);
-	meshFaceConnects.append(10);
-	meshFaceConnects.append(9);
-
-	meshFaceCounts.append(4);
-
-	meshFaceConnects.append(6);
-	meshFaceConnects.append(7);
-	meshFaceConnects.append(11);
-	meshFaceConnects.append(10);
-
-	meshFaceCounts.append(4);
-
-	meshFaceConnects.append(7);
-	meshFaceConnects.append(4);
-	meshFaceConnects.append(8);
-	meshFaceConnects.append(11);
-
-	meshFaceCounts.append(4);
-
-	meshFaceConnects.append(8);
-	meshFaceConnects.append(9);
-	meshFaceConnects.append(12);
-
-	meshFaceCounts.append(3);
-
-	meshFaceConnects.append(9);
-	meshFaceConnects.append(10);
-	meshFaceConnects.append(12);
-
-	meshFaceCounts.append(3);
-
-	meshFaceConnects.append(10);
-	meshFaceConnects.append(11);
-	meshFaceConnects.append(12);
-
-	meshFaceCounts.append(3);
-
-	meshFaceConnects.append(11);
-	meshFaceConnects.append(8);
-	meshFaceConnects.append(12);
-
-	meshFaceCounts.append(3);
-
+		meshFaceConnects.append(12);
+		meshFaceCounts.append(3);
+	}
 
 	MFnMesh fnArrow;
 	MObject arrowTransform = fnArrow.create(numVerts, numFaces, meshVertLocs, meshFaceCounts, meshFaceConnects);
