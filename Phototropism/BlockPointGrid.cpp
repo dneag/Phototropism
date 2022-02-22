@@ -37,23 +37,16 @@ void BlockPointGrid::setIndexVectorsAndMaximums() {
 
 				// Feels a little awkward doing this here, but it so happens that this should work.  That is, we will calculate the maximum
 				// blockage and maximum light vector here since we are already looping through the correct range of grid units
-				// What we are adding to maximumBlockage here is the same as shadeStrength times grid[xI][yI][zI].density, since
+				// What we are adding to maximumBlockage here is the same as blockageStrength times grid[xI][yI][zI].density, since
 				// we are finding the maximum, all densities are 1. so no need to multiply
 
 				double blockageStrength = 1. - (trueVectToUnit.getMag() / detectionRange);
-				/*MStreamUtils::stdOutStream() << "trueVectToUnit.getMag(): " << trueVectToUnit.getMag() << ", shadeStrength: " << shadeStrength
-				<< ", detectionRange: " << detectionRange << "\n";*/
 				blockageStrength = trunc4(blockageStrength);
 				maximumBlockage += blockageStrength;
-				trueVectToUnit.resize(blockageStrength);
-				maximumLightVector += trueVectToUnit;
+				CVect blockageVector = trueVectToUnit.resized(blockageStrength);
+				maximumLightVector += blockageVector;
 
-				// And now we can add the index vector
-				// Note that we can make the direction altering effects of block points stronger by increasing the magnitude of
-				// trueVectToUnit (done here using the intensity attribute).  However, keep in mind that doing this has two major
-				// consequences: first, units' blockage could exceed maximumBlockage, and second, units' lightDirection 
-				// could face any direction, including downward (see adjustGrid() for how these are applied)
-				IndexVector indexVectToUnit(xIDist, yIDist, zIDist, trueVectToUnit, blockageStrength);
+				IndexVector indexVectToUnit(xIDist, yIDist, zIDist, blockageVector, blockageStrength);
 				indexVectorsToUnitsInCone.push_back(indexVectToUnit);
 			}
 		}
@@ -68,7 +61,7 @@ void BlockPointGrid::setIndexVectorsAndMaximums() {
 
 	// Resize all index vectors' trueVects to account for intensity
 	for (auto &v : indexVectorsToUnitsInCone) 
-		v.trueVect.resize(maximumLightVector.getMag() * intensity);
+		v.blockageVect.resize(v.blockageVect.getMag() * maximumLightVector.getMag() * intensity);
 }
 
 void BlockPointGrid::initiateGrid() {
@@ -132,11 +125,11 @@ void BlockPointGrid::displayGrid() const {
 				std::string unitName = "[" + std::to_string(xI) + "][" + std::to_string(yI) + "][" + std::to_string(zI) + "]"; +
 					"_Density: " + std::to_string(grid[xI][yI][zI].density);
 
-				this->displayUnitLightDirection(xI, yI, zI);
-				this->displayUnitBlockage(xI, yI, zI);
-				this->displayUnitDensity(xI, yI, zI);
+				//this->displayUnitLightDirection(xI, yI, zI);
+				this->displayAffectedUnitLightDirection(xI, yI, zI);
+				//this->displayUnitBlockage(xI, yI, zI);
+				//this->displayUnitDensity(xI, yI, zI);
 
-				// Assuming the grid units are cubes, this works
 				//makeCube(grid[xI][yI][zI].center, unitSize, unitName);
 			}
 		}
@@ -192,7 +185,28 @@ void BlockPointGrid::displayUnitLightDirection(int uX, int uY, int uZ) const {
 	// make it so that the arrow's length represents the magnitude of the lightDirection vector, but scaled down so that
 	// the maximum length is equal to unitSize
 	double arrowLength = unitSize * (grid[uX][uY][uZ].lightDirection.getMag() / maximumLightVector.getMag());
-	makeArrow(grid[uX][uY][uZ].center + Point(0., -unitSize*.5, 0.), CVect(grid[uX][uY][uZ].lightDirection).resized(arrowLength), "lightDirectionArrow", .01);
+
+
+	makeArrow(grid[uX][uY][uZ].center + Point(0., -unitSize*.5, 0.), CVect(grid[uX][uY][uZ].lightDirection).resized(arrowLength),
+		"lightDirectionArrow", .01);
+
+}
+
+void BlockPointGrid::displayAffectedUnitLightDirection(int uX, int uY, int uZ) const {
+
+	//only makeArrow() if the unit has some blockage
+	double percentBlocked = grid[uX][uY][uZ].blockage / maximumBlockage;
+	if (percentBlocked > 0.) {
+
+		double arrowLength = unitSize * (1. - percentBlocked);
+		//double arrowLength = unitSize * (grid[uX][uY][uZ].lightDirection.getMag() / maximumLightVector.getMag());
+		//MStreamUtils::stdOutStream() << "arrowLength = " << arrowLength << ", unitSize = " << unitSize << ", percentBlocked = " << percentBlocked << "\n";
+		// size the arrow so that it represents the light strength of the unit 
+		//arrowLength = arrowLength * (1. - grid[uX][uY][uZ].blockage);
+
+		makeArrow(grid[uX][uY][uZ].center + Point(0., -unitSize*.5, 0.), CVect(grid[uX][uY][uZ].lightDirection).resized(arrowLength),
+			"lightDirectionArrow", .01);
+	}
 }
 
 void BlockPointGrid::displayUnitDensity(int uX, int uY, int uZ) const {
@@ -288,7 +302,7 @@ MStatus BlockPointGrid::moveBlockPoint(BlockPoint *bp, const Point newLoc) {
 
 void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 
-	// If s is add, bp->density will be multiplied by 1.  If s is subtract, bp->density will be multiplied by -1
+	// If adj is add, bp->density will be multiplied by 1.  If s is subtract, bp->density will be multiplied by -1
 	double densityAdjustment = bp->density * adj;
 
 	double startingUnitDensity = std::min(grid[bp->gridX][bp->gridY][bp->gridZ].density, 1.);
@@ -296,7 +310,7 @@ void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 	double currentUnitDensity = std::min(grid[bp->gridX][bp->gridY][bp->gridZ].density, 1.);
 	double densityChange = currentUnitDensity - startingUnitDensity;
 	double maxLVMag = maximumLightVector.getMag();
-
+	
 	if (densityChange != 0.) {
 
 		for (const auto &indexVect : indexVectorsToUnitsInCone) {
@@ -307,13 +321,8 @@ void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 
 			if (this->indicesAreInRange(X, Y, Z)) {
 
-				if (X == 18 && Y == 6 && Z == 16) {
-					//makeArrow(grid[X][Y][Z].center, grid[X][Y][Z].lightDirection, "lightDirectionBefore", .01);
-					//makeArrow(grid[X][Y][Z].center, indexVect.trueVect.resized(indexVect.trueVect.getMag() * densityChange), "vectorAdded", .01);
-					//MStreamUtils::stdOutStream() << "Adding bp effects for unit " << X << ", " << Y << ", " << Z << ", densityChange: " << densityChange << "\n";
-				}
-
-				grid[X][Y][Z].lightDirection += indexVect.trueVect.resized(indexVect.trueVect.getMag() * densityChange);
+				MStreamUtils::stdOutStream() << "X Y Z: " << X << ", " << Y << ", " << Z << ", vect size: " << indexVect.blockageVect.getMag() << "\n";
+				grid[X][Y][Z].lightDirection += indexVect.blockageVect.resized(indexVect.blockageVect.getMag() * densityChange);
 				grid[X][Y][Z].lightDirection.resize(maxLVMag);
 				grid[X][Y][Z].blockage += indexVect.blockageStrength * densityChange;
 			}

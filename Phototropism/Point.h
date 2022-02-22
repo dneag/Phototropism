@@ -8,6 +8,8 @@
 #include <iostream>
 #include <math.h>
 
+#include <maya/MStreamUtils.h>
+
 struct Point
 {
 	double x = 0.;

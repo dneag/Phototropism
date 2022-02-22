@@ -64,7 +64,6 @@ void makeCube(const Point &location, double width, std::string name) {
 	MObject cubeTransform = fnCube.create(8, 6, cubeVertLocs, iaCubeFaceCounts, iaCubeFaceConnects);
 
 	// Give our object a name
-
 	MFnDependencyNode nodeFn;
 	nodeFn.setObject(cubeTransform);
 
@@ -237,7 +236,6 @@ void makeSphere(const Point &location, double radius, std::string name)
 	MObject sphereTransform = newSphere.create(numSphereVerts, numSphereFaces, sphereVertLocs, iaSphereFaceCounts, iaSphereFaceConnects);
 
 	// Give our object a name
-
 	MFnDependencyNode nodeFn;
 	nodeFn.setObject(sphereTransform);
 
@@ -317,7 +315,7 @@ void makeArrow(const Point &location, const CVect &vect, std::string name, doubl
 	}
 
 
-	// make faceConnects and counts for tris
+	// make faceConnects and counts for tris (arrow tip)
 	for (int i = 8; i < 12; i++) {
 
 		if (i % 4 != 3) {
@@ -339,7 +337,6 @@ void makeArrow(const Point &location, const CVect &vect, std::string name, doubl
 	MObject arrowTransform = fnArrow.create(numVerts, numFaces, meshVertLocs, meshFaceCounts, meshFaceConnects);
 
 	// Give our object a name
-
 	MFnDependencyNode nodeFn;
 	nodeFn.setObject(arrowTransform);
 
