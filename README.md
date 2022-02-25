@@ -19,7 +19,7 @@ To run...
 
   - enter the following line of code:
 
-    testGrow
+    testBPG
   
   - execute it by clicking the 'Execute' button along the top of the script editor
 
