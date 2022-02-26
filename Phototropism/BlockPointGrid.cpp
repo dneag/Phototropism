@@ -321,7 +321,7 @@ void BlockPointGrid::adjustGrid(const BlockPoint *bp, const adjustment adj) {
 
 			if (this->indicesAreInRange(X, Y, Z)) {
 
-				MStreamUtils::stdOutStream() << "X Y Z: " << X << ", " << Y << ", " << Z << ", vect size: " << indexVect.blockageVect.getMag() << "\n";
+				//MStreamUtils::stdOutStream() << "X Y Z: " << X << ", " << Y << ", " << Z << ", vect size: " << indexVect.blockageVect.getMag() << "\n";
 				grid[X][Y][Z].lightDirection += indexVect.blockageVect.resized(indexVect.blockageVect.getMag() * densityChange);
 				grid[X][Y][Z].lightDirection.resize(maxLVMag);
 				grid[X][Y][Z].blockage += indexVect.blockageStrength * densityChange;

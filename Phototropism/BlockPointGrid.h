@@ -126,6 +126,7 @@ class BlockPointGrid {
 
 	void initiateGrid();
 
+	// Establishes indexVectorsToUnitsInCone, maximumBlockage, and maximumLightVector
 	void setIndexVectorsAndMaximums();
 
 	// Applies the bp's effect to the grid

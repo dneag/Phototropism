@@ -36,20 +36,11 @@ MStatus TestBPGCommand::doIt(const MArgList &argList) {
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	double gridSize = 3.25;
-	BlockPointGrid bpg(gridSize, gridSize, gridSize, .25, 2.4, (MM::PI / 8.), .1);
-
-	BlockPoint *bp;
-	bpg.addBlockPoint(Point(-.45, 2.7, -.45), .2, bp);
-	//bpg.addBlockPoint(Point(-.52, 2.55, -.43), .2, bp);
-	//bpg.addBlockPoint(Point(-.44, 2.6, -.6), .2, bp);
-	//bpg.addBlockPoint(Point(-.44, 2.66, -.53), .2, bp);
-	//bpg.addBlockPoint(Point(-.58, 2.6, -.49), .2, bp);
-	//bpg.addBlockPoint(Point(-.55, 2.72, -.42), .2, bp);
-	//bpg.addBlockPoint(Point(-.6, 2.57, -.6), .2, bp);
+	BlockPointGrid bpg(gridSize, gridSize, gridSize, .25, 2.4, (MM::PI / 4.), .1);
 
 	// Create a bunch of block points at random locations clustered around another random point, and add them to the grid
 	// ...being careful to keep all points on the grid
-	/*double clusterRadius = std::min(1., (gridSize/8.));
+	double clusterRadius = std::min(1., (gridSize/8.));
 	double clusterRange = (gridSize / 2.) - clusterRadius;
 	Point clusterPoint = randPoint(-clusterRange, clusterRange, clusterRadius, gridSize - clusterRadius, -clusterRange, clusterRange);
 	std::size_t totalBlockPoints = 50;
@@ -60,7 +51,7 @@ MStatus TestBPGCommand::doIt(const MArgList &argList) {
 								clusterPoint.z - clusterRadius, clusterPoint.z + clusterRadius);
 		BlockPoint *dummyPtr;
 		bpg.addBlockPoint(randP, .7, dummyPtr);
-	}*/
+	}
 
 	bpg.displayGridBorder();
 	bpg.displayGrid();
