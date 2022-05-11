@@ -4,6 +4,8 @@ away from shade.  It creates a 3D cubic grid, with each unit storing a density l
 units they fall in, which in turn affects the direction of the vectors stored in units below.  Plants on the grid can see these vectors and use them to determine
 which direction they should grow.
 
+Program demo here:  https://dneag.github.io/phot_demo
+
 To run...
 
   - have Autodesk Maya 2018 installed (other versions may well work, but I cannot gaurantee).
