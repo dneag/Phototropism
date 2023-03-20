@@ -99,9 +99,6 @@ BlockPointGrid::BlockPointGrid(double XSIZE, double YSIZE, double ZSIZE, double 
 
 	unitSize = UNITSIZE;
 
-	// Note to self: after dividing two doubles that divide evenly in reality, the result is represented internally as
-	// ~ .00000000001 less than its integer counterpart.  So truncating will effectively reduce by 1.  Thus the ceil here.
-
 	xElements = std::ceil(XSIZE / UNITSIZE);
 	yElements = std::ceil(YSIZE / UNITSIZE);
 	zElements = std::ceil(ZSIZE / UNITSIZE);
@@ -264,7 +261,7 @@ MStatus BlockPointGrid::addBlockPoint(const Point loc, double bpDensity, BlockPo
 	std::size_t xInd = (loc.x + halfGridXSize) / unitSize;
 	std::size_t yInd = loc.y / unitSize;
 	std::size_t zInd = (loc.z + halfGridZSize) / unitSize;
-	//MStreamUtils::stdOutStream() << "Adding bp with loc: " << loc << " and indices: " << xInd << ", " << yInd << ", " << zInd << "\n";
+
 	if (!this->indicesAreInRange_showError(xInd, yInd, zInd))
 		return MS::kFailure;
 
